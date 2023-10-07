@@ -1,0 +1,1 @@
+/usr/bin/gcc -g CMakeFiles/LkGui.dir/LkGui/src/main.c.o CMakeFiles/LkGui.dir/lib/glad/src/glad.c.o CMakeFiles/LkGui.dir/LkGui/src/LkGui/Core/Logger.c.o -o LkGui  /usr/lib/libglfw.so 
