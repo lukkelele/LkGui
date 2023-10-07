@@ -1,4 +1,4 @@
-#include "LkGui/Backends/LkGui_impl_glfw.h"
+#include "LkGui/Backends/LkGui_Impl_Glfw.h"
 #include "LkGui/Core/Context.h"
 
 LkGui_ImplGlfw_Data* _LkGui_ImplGlfw_Data = NULL;

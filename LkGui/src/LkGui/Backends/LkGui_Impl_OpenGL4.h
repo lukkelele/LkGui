@@ -1,7 +1,7 @@
 #ifndef LKGUI_IMPL_OPENGL4
 #define LKGUI_IMPL_OPENGL4
 
-#include "LkGui_impl_base.h"
+#include "LkGui_Impl_Base.h"
 
 #ifdef LKGUI_IMPL_OPENGL_GLAD
 #include <glad/glad.h>

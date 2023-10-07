@@ -6,8 +6,8 @@
 #include "LkGui/Core/Logger.h"
 #include "LkGui/Core/Context.h"
 // Backend
-#include "LkGui/Backends/LkGui_impl_glfw.h"
-#include "LkGui/Backends/LkGui_impl_opengl4.h"
+#include "LkGui/Backends/LkGui_Impl_Glfw.h"
+#include "LkGui/Backends/LkGui_Impl_OpenGL4.h"
 //===================================================================
 
 

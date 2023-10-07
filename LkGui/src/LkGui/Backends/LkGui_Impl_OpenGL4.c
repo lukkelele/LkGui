@@ -1,4 +1,4 @@
-#include "LkGui/Backends/LkGui_impl_opengl4.h"
+#include "LkGui/Backends/LkGui_Impl_OpenGL4.h"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
