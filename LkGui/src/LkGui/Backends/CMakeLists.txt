@@ -1,0 +1,10 @@
+target_sources(${PROJECT_NAME} 
+  PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_base.h
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_glfw.h
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_glfw.c
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_opengl3.h
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_opengl3.c
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_opengl4.h
+    ${CMAKE_CURRENT_LIST_DIR}/LkGui_impl_opengl4.c
+  )
