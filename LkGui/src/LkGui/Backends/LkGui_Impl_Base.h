@@ -31,7 +31,7 @@ enum LkGui_BlendFunc
 {
     LkGui_BlendFunc_None                          = 0,
     LkGui_BlendFunc_SrcAlpha_OneMinusSrcAlpha     = 1 << 0,
-    LkGui_BlendFunc_SrcAlpha_OneMinusDistantAlpha = 2 << 0,
+    LkGui_BlendFunc_SrcAlpha_OneMinusDistantAlpha = 1 << 1,
 };
 
 #endif // LKGUI_IMPL_BASE_H

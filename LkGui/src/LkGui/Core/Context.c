@@ -12,7 +12,6 @@ void LkGui_CreateContext()
 
 LkGuiContext* LkGui_GetContext()
 {
-    // if (!_LkGui_MainContext)
     if (_LkGui_MainContext == NULL)
     {
         printf("You need to create a LkGui context before using any other functions! Call LkGui_CreateContext()\n");

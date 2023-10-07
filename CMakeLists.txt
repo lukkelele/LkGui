@@ -38,6 +38,7 @@ target_link_libraries(${PROJECT_NAME}
         ${GLFW3_LIBRARY}
 )
 
+file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
