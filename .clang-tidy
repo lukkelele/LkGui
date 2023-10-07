@@ -1,0 +1,22 @@
+---
+# Inherit default checks for clang-tidy.
+Checks: '*'
+
+# Disable specific checks.
+Checks: >-
+  -*,
+  cppcoreguidelines-*,
+  modernize-*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type
+  -misc-unused-include
+
+# Enable a specific check.
+Checks: >-
+  -misc-unused-include  
+
+
+# Specify header filter to only apply clang-tidy checks to certain files.
+#HeaderFilterRegex: '^LkGui/src/'

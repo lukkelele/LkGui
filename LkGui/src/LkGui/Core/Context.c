@@ -1,14 +1,22 @@
 #include "LkGui/Core/Context.h"
 
-LkContext _LkMainContext;
+LkGuiContext* _LkGui_MainContext;
 
 
-void LkGui_Init_MainContext()
+void LkGui_CreateContext()
 {
-    _LkMainContext.MainWindow = NULL;
+    _LkGui_MainContext = LK_NEW(LkGuiContext);
+    _LkGui_MainContext->MainWindow = NULL;
+    _LkGui_MainContext->BackendData = LK_NEW(LkGui_BackendData);
 }
 
-LkContext* LkGui_GetContext()
+LkGuiContext* LkGui_GetContext()
 {
-    return &_LkMainContext;
+    // if (!_LkGui_MainContext)
+    if (_LkGui_MainContext == NULL)
+    {
+        printf("You need to create a LkGui context before using any other functions! Call LkGui_CreateContext()\n");
+        exit(1);
+    }
+    return _LkGui_MainContext;
 }

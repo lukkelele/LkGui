@@ -22,31 +22,12 @@ int main()
     if (!glfwInit())
         return -1;
 
-    // GLFWwindow* glfwWindow = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
-    // glfwMakeContextCurrent(glfwWindow);
-    // LkGui_ImplGlfw_Init(LK_INSTANT_CALLBACKS);
+    LkGui_CreateContext();
     LkGui_ImplGlfw_Init(true);
     LkGui_ImplGlfw_CreateWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL);
     GLFWwindow* glfwWindow = LkGui_ImplGlfw_GetMainWindow();
-    // glfwMakeContextCurrent(glfwWindow);
-
 
     LkGui_ImplOpenGL4_Init();
-    // GLenum err = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    // if (err == 0)
-    // {
-    //     printf("[ERROR] Error starting GLAD");
-    //     return -1;
-    // }
-    // else
-    // {
-    //     printf("OpenGL Version: %s\n", glGetString(GL_VERSION));
-    // }
-
-    glEnable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LINE_SMOOTH);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while (!glfwWindowShouldClose(glfwWindow))
     {

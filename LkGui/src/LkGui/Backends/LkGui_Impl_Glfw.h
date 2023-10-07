@@ -5,10 +5,9 @@
 #include <GLFW/glfw3.h>
 #include "LkGui_Impl_Base.h"
 
-// Forward declaration
+// Forward declarations
 typedef struct GLFWwindow  GLFWwindow;
 typedef struct GLFWmonitor GLFWmonitor;
-
 typedef struct LkGui_ImplGlfw_Data LkGui_ImplGlfw_Data;
 
 struct LkGui_ImplGlfw_Data
@@ -17,6 +16,7 @@ struct LkGui_ImplGlfw_Data
     bool          Initialized;
     bool          InstantCallbacks;
 };
+
 
 void LkGui_ImplGlfw_Init(bool instant_callbacks);
 GLFWwindow* LkGui_ImplGlfw_CreateWindow(const char* title, uint16_t width, uint16_t height, GLFWmonitor* monitor, GLFWwindow* share);
