@@ -42,6 +42,15 @@ char* _LkGui_ReadFile(const char* filepath) {
 //=============================================================================
 // [SECTION] Renderer
 //=============================================================================
+// TODO: Do vertex array struct here to provide size and other data to determine which
+// data the vertexbuffer points to
+void _LkGui_Draw(unsigned int va, unsigned int shader)
+{
+    _LkGui_Shader_Bind(shader);
+    _LkGui_VertexArray_Bind(va);
+    glDrawArrays(GL_TRIANGLES, 0, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex) / LK_2D_VERTEX_SIZE);
+}
+
 unsigned int _LkGui_CreateVertexArray()
 {
     // unsigned int* va = (unsigned int*)malloc(sizeof(unsigned int));
@@ -140,6 +149,16 @@ void _LkGui_VertexBufferLayout_Push_Float(LkGui_VertexBufferLayout* layout, unsi
 //=============================================================================
 // [SECTION] Shaders
 //=============================================================================
+void _LkGui_Shader_Bind(unsigned int id)
+{
+    glUseProgram(id);
+}
+
+void _LkGui_Shader_Unbind(unsigned int id)
+{
+    glUseProgram(0);
+}
+
 LkGui_ShaderProgramSource _LkGui_ParseShader(const char* filepath)
 {
     // printf("Parsing shader: %s\n", filepath);

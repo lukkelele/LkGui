@@ -40,12 +40,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.10f, 0.80f, 0.60f, 1.0f);
 
-        // Use our shader
-        glUseProgram(shader);
-
-        // Bind VAO and draw the box
-        glBindVertexArray(va);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        _LkGui_Draw(va, shader);
 
         glfwSwapBuffers(glfwWindow);
         glfwPollEvents();

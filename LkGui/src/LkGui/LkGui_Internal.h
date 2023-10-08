@@ -21,6 +21,8 @@
 #define LK_ARRAYSIZE(_ARR)     ((int)(sizeof(_ARR) / sizeof(*(_ARR))))
 #define LK_NEW(_TYPE)          (_TYPE*)malloc(sizeof(_TYPE))
 
+#define LK_2D_VERTEX_SIZE 2
+#define LK_3D_VERTEX_SIZE 3
 #define LKGUI_MAX_VERTEXBUFFERLAYOUT_SIZE 200
 
 //=============================================================================
@@ -65,25 +67,29 @@ char* _LkGui_ReadFile(const char* filepath);
 
 //=============================================================================
 // [SECTION] Renderer
+//
+// TODO:
+// - Add IndexBuffer
 //=============================================================================
+void         _LkGui_Draw(unsigned int va, unsigned int shader);
 unsigned int _LkGui_CreateVertexArray();
 unsigned int _LkGui_CreateVertexBuffer(float* _vertices, unsigned int _arrsize);
-// void         _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, LkGui_VertexBufferLayout* layout);
 void         _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, unsigned int layout);
 void         _LkGui_VertexArray_Bind(unsigned int id);
 void         _LkGui_VertexBuffer_Bind(unsigned int id);
 void         _LkGui_VertexArray_Unbind(unsigned int id /* could be skipped but for verbose purposes let stay */);
 void         _LkGui_VertexBuffer_Unbind(unsigned int id);
-unsigned int _LkGui_VertexBufferElement_GetSizeOfType(unsigned int type);
 void         _LkGui_VertexBufferLayout_Init(LkGui_VertexBufferLayout* layout);
 void         _LkGui_VertexBufferLayout_Push_Float(LkGui_VertexBufferLayout* layout, unsigned int count);
+unsigned int _LkGui_VertexBufferElement_GetSizeOfType(unsigned int type);
 unsigned int _LkGui_VertexBufferLayout_GetStride(LkGui_VertexBufferLayout* layout);
+
 
 //=============================================================================
 // [SECTION] Shaders
 //=============================================================================
-unsigned int              _LkGui_Shader_Bind(unsigned int id);
-unsigned int              _LkGui_Shader_Unbind(unsigned int id);
+void                      _LkGui_Shader_Bind(unsigned int id);
+void                      _LkGui_Shader_Unbind(unsigned int id);
 unsigned int              _LkGui_CreateShader(const char* filepath);
 unsigned int              _LkGui_CompileShader(const char* source, unsigned int type);
 static unsigned int       _LkGui_CheckShaderCompilation(unsigned int shader_id, LkGui_ShaderType type);
