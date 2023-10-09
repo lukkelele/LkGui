@@ -17,30 +17,32 @@
 
 int main()
 {
-    LOG_DEBUG("Hello World\n");
-
     LkGui_CreateContext();
     LkGui_ImplGlfw_Init(true);
     LkGui_ImplGlfw_CreateWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL);
     GLFWwindow* glfwWindow = LkGui_ImplGlfw_GetMainWindow();
     LkGui_ImplOpenGL4_Init();
 
-    unsigned int shader = _LkGui_CreateShader("assets/shaders/simple.shader");
-
-    printf("Box[2] %f\n", _LkGui_Geometry_Box_Vertices_NoTex[2]);
-
-    unsigned int va, vb;
-
+    unsigned int va, vb, shader;
+    LkGui_IndexBuffer* ib;
     va = _LkGui_CreateVertexArray();
     vb = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
+    ib = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
     _LkGui_VertexArray_AddBuffer(va, vb, LkGui_VertexBufferLayout_VertCoords);
+
+
+    shader = _LkGui_CreateShader("assets/shaders/simple.shader");
 
     while (!glfwWindowShouldClose(glfwWindow))
     {
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.10f, 0.80f, 0.60f, 1.0f);
 
-        _LkGui_Draw(va, shader);
+        _LkGui_Draw(va, ib, shader);
+        // _LkGui_Shader_Bind(shader);
+        // _LkGui_VertexArray_Bind(va);
+        // _LkGui_IndexBuffer_Bind(ib->);
+        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(glfwWindow);
         glfwPollEvents();

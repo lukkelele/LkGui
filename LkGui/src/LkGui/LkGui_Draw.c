@@ -15,40 +15,24 @@ enum LkGui_ShaderType
     LkGui_ShaderType_Fragment =  1,
 };
 
-
-long _LkGui_FileSize(FILE* file)
-{
-    fseek(file, 0, SEEK_END);
-    long filesize = ftell(file);
-    rewind(file);
-    return filesize;
-}
-
-char* _LkGui_ReadFile(const char* filepath) {
-    FILE *file = fopen(filepath, "rb");
-    if (!file)
-    {
-        fprintf(stderr, "ERROR: fopen %s failed: %d %s\n", filepath, errno, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    int filesize = _LkGui_FileSize(file);
-    char *data = calloc(filesize + 1, sizeof(char));
-    fread(data, 1, filesize, file);
-    fclose(file);
-    return data;
-}
-
 //=============================================================================
 // [SECTION] Renderer
 //=============================================================================
-// TODO: Do vertex array struct here to provide size and other data to determine which
-// data the vertexbuffer points to
-void _LkGui_Draw(unsigned int va, unsigned int shader)
+void _LkGui_Draw(unsigned int va, LkGui_IndexBuffer* ib, unsigned int shader)
 {
     _LkGui_Shader_Bind(shader);
     _LkGui_VertexArray_Bind(va);
-    glDrawArrays(GL_TRIANGLES, 0, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex) / LK_2D_VERTEX_SIZE);
+    _LkGui_IndexBuffer_Bind(ib->ID);
+    // printf("IndexBuffer: %d, count: %d\n", ib->ID, ib->Count);
+    // printf("GetCount(ib->ID) == %d\n", _LkGui_IndexBuffer_GetCount(ib));
+    LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(ib), GL_UNSIGNED_INT, NULL));
+}
+
+void _LkGui_Draw_NoIB(unsigned int va, unsigned int shader)
+{
+    _LkGui_Shader_Bind(shader);
+    _LkGui_VertexArray_Bind(va);
+    LK_GLCALL(glDrawArrays(GL_TRIANGLES, 0, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex) / LK_2D_VERTEX_SIZE));
 }
 
 unsigned int _LkGui_CreateVertexArray()
@@ -80,7 +64,7 @@ void _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, unsigned int
     _LkGui_VertexBuffer_Bind(vb);
     unsigned int offset = 0;
     LkGui_VertexBufferElement* elements = layout->Elements;
-    printf("Elements in layout: %d\n", elements->Count);
+    // printf("Elements in layout: %d\n", elements->Count);
 
     for (unsigned int i = 0; i < layout->ElementCount; i++)
     {
@@ -144,7 +128,36 @@ void _LkGui_VertexBufferLayout_Push_Float(LkGui_VertexBufferLayout* layout, unsi
     layout->Stride += count * _LkGui_VertexBufferElement_GetSizeOfType(GL_FLOAT);
 }
 
+LkGui_IndexBuffer* _LkGui_CreateIndexBuffer(const void* data, unsigned int count)
+{
+    LK_ASSERT(sizeof(unsigned int) == sizeof(GLuint));
+    LkGui_IndexBuffer* ib = LK_NEW(LkGui_IndexBuffer);
+    glGenBuffers(1, &ib->ID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->ID);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
+    ib->Count = count;
+    return ib;
+}
 
+void _LkGui_IndexBuffer_Bind(unsigned int id)
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+}
+
+void _LkGui_IndexBuffer_Unbind(unsigned int id)
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+unsigned int _LkGui_IndexBuffer_GetCount(LkGui_IndexBuffer* ib)
+{
+    return ib->Count;
+}
+
+void _LkGui_DeleteBuffer(unsigned int id)
+{
+    glDeleteBuffers(1, &id);
+}
 
 //=============================================================================
 // [SECTION] Shaders
@@ -252,21 +265,44 @@ unsigned int _LkGui_CreateShader(const char* filepath)
     return program;
 }
 
+bool _LkGui_GLCall(const char* function, const char* file, int line)
+{
+    unsigned int error;
+    while ((error = glGetError()))
+    {
+        printf("[OpenGL Error] (%d)\nFUNCTION: %s\nFILE: %s\n LINE: %d", error, function, file, line);
+        return false;
+    }
+    return true;
+}
 
-
-
-
+void _LkGui_GLClearError()
+{
+    while (glGetError() != GL_NO_ERROR);
+}
 
 
 //=============================================================================
 // [SECTION] Geometry
 //=============================================================================
-float _LkGui_Geometry_Box_Vertices_NoTex[12] = {
-   -0.5f, -0.5f, // bottom left
-    0.5f, -0.5f, // bottom right
-   -0.5f,  0.5f, // top left
+float _LkGui_Geometry_Box_Vertices_NoTex[8] = {
+   -0.5f, -0.5f,  // 0
+    0.5f, -0.5f,  // 1
+    0.5f,  0.5f,  // 2
+   -0.5f,  0.5f   // 3
+};
 
-   -0.5f,  0.5f, // top left
-    0.5f, -0.5f, // bottom right
-    0.5f,  0.5f  // top right
+float _LkGui_Geometry_Box_Vertices_NoTex_NoIb[12] = {
+   -0.5f, -0.5f,
+    0.5f, -0.5f,
+   -0.5f,  0.5f,
+
+   -0.5f,  0.5f,
+    0.5f, -0.5f,
+    0.5f,  0.5f
+};
+
+unsigned int _LkGui_Geometry_Box_Indices[6] = {
+    0, 1, 2,
+    2, 3, 0
 };
