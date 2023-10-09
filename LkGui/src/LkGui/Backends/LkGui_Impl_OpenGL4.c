@@ -18,13 +18,10 @@ unsigned int LkGui_ImplOpenGL4_Init()
     }
     printf("[LkGui] OpenGL Version: %s\n", glGetString(GL_VERSION));
 
-    // glEnable(GL_BLEND);
-    // glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_LINE_SMOOTH);
     LkGui_ImplOpenGL4_EnableBlending();
-    // LkGui_ImplOpenGL4_EnableDepth();
     LkGui_ImplOpenGL4_EnableLineAntiAliasing();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
     return LK_NO_ERROR;
 }
@@ -32,7 +29,7 @@ unsigned int LkGui_ImplOpenGL4_Init()
 void LkGui_ImplOpenGL4_SetBlending(int blending_enabled)
 {
     LkGuiContext* ctx = LkGui_GetContext();
-    if (blending_enabled == LKGUI_BLENDING_ENABLE)
+    if (blending_enabled == LK_BLENDING_ENABLE)
     {
         ctx->BackendData->BlendingEnabled = true;
         glEnable(GL_BLEND);
@@ -41,13 +38,13 @@ void LkGui_ImplOpenGL4_SetBlending(int blending_enabled)
     glDisable(GL_BLEND);
     ctx->BackendData->BlendingEnabled = false;
 }
-void LkGui_ImplOpenGL4_EnableBlending()  { LkGui_ImplOpenGL4_SetBlending(LKGUI_BLENDING_ENABLE);  }
-void LkGui_ImplOpenGL4_DisableBlending() { LkGui_ImplOpenGL4_SetBlending(LKGUI_BLENDING_DISABLE); }
+void LkGui_ImplOpenGL4_EnableBlending()  { LkGui_ImplOpenGL4_SetBlending(LK_BLENDING_ENABLE);  }
+void LkGui_ImplOpenGL4_DisableBlending() { LkGui_ImplOpenGL4_SetBlending(LK_BLENDING_DISABLE); }
 
 void LkGui_ImplOpenGL4_SetDepth(int depth_enabled)
 {
     LkGuiContext* ctx = LkGui_GetContext();
-    if (depth_enabled == LKGUI_DEPTH_ENABLE)
+    if (depth_enabled == LK_DEPTH_ENABLE)
     {
         ctx->BackendData->DepthEnabled = true;
         glEnable(GL_DEPTH_TEST);
@@ -56,13 +53,13 @@ void LkGui_ImplOpenGL4_SetDepth(int depth_enabled)
     glDisable(GL_DEPTH_TEST);
     ctx->BackendData->DepthEnabled = false;
 }
-void LkGui_ImplOpenGL4_EnableDepth()  { LkGui_ImplOpenGL4_SetDepth(LKGUI_DEPTH_ENABLE);  }
-void LkGui_ImplOpenGL4_DisableDepth() { LkGui_ImplOpenGL4_SetDepth(LKGUI_DEPTH_DISABLE); }
+void LkGui_ImplOpenGL4_EnableDepth()  { LkGui_ImplOpenGL4_SetDepth(LK_DEPTH_ENABLE);  }
+void LkGui_ImplOpenGL4_DisableDepth() { LkGui_ImplOpenGL4_SetDepth(LK_DEPTH_DISABLE); }
 
 void LkGui_ImplOpenGL4_SetLineAntiAliasing(int enabled)
 {
     LkGuiContext* ctx = LkGui_GetContext();
-    if (enabled == LKGUI_LINE_ANTIALIASING_ENABLE)
+    if (enabled == LK_LINE_ANTIALIASING_ENABLE)
     {
         ctx->BackendData->LineAntiAliasing = true;
         glEnable(GL_LINE_SMOOTH);
@@ -71,5 +68,5 @@ void LkGui_ImplOpenGL4_SetLineAntiAliasing(int enabled)
     glDisable(GL_LINE_SMOOTH);
     ctx->BackendData->LineAntiAliasing = false;
 }
-void LkGui_ImplOpenGL4_EnableLineAntiAliasing()  { LkGui_ImplOpenGL4_SetLineAntiAliasing(LKGUI_LINE_ANTIALIASING_ENABLE);  }
-void LkGui_ImplOpenGL4_DisableLineAntiAliasing() { LkGui_ImplOpenGL4_SetLineAntiAliasing(LKGUI_LINE_ANTIALIASING_DISABLE); }
+void LkGui_ImplOpenGL4_EnableLineAntiAliasing()  { LkGui_ImplOpenGL4_SetLineAntiAliasing(LK_LINE_ANTIALIASING_ENABLE);  }
+void LkGui_ImplOpenGL4_DisableLineAntiAliasing() { LkGui_ImplOpenGL4_SetLineAntiAliasing(LK_LINE_ANTIALIASING_DISABLE); }

@@ -1,8 +1,5 @@
 #ifndef LKGUI_CONTEXT_H
 #define LKGUI_CONTEXT_H
-//==============================================================================
-// LkContext
-//==============================================================================
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -19,14 +16,11 @@ struct LkGuiContext
     LkGui_BackendData*  BackendData;
 };
 
-//==============================================================================
-// Internal
-//------------------------------------------------------------------------------
 
-//==============================================================================
-
-void LkGui_CreateContext();
+LkGuiContext* LkGui_CreateContext();
 LkGuiContext* LkGui_GetContext();
+
+void _LkGui_Context_Init_BackendData(LkGui_BackendData* backendData);
 
 
 #endif // LKGUI_CONTEXT_H

@@ -15,20 +15,35 @@ enum LkGui_ShaderType
     LkGui_ShaderType_Fragment =  1,
 };
 
+
 //=============================================================================
 // [SECTION] Renderer
 //=============================================================================
-void _LkGui_Draw(unsigned int va, LkGui_IndexBuffer* ib, unsigned int shader)
+bool _LkGui_GLCall(const char* function, const char* file, int line)
+{
+    unsigned int error;
+    while ((error = glGetError()))
+    {
+        printf("[OpenGL Error] (%d)\nFUNCTION: %s\nFILE: %s\n LINE: %d", error, function, file, line);
+        return false;
+    }
+    return true;
+}
+
+void _LkGui_GLClearError()
+{
+    while (glGetError() != GL_NO_ERROR);
+}
+
+void _LkGui_Draw(unsigned int va, LkGui_IndexBuffer* ib, LkGui_Shader* shader)
 {
     _LkGui_Shader_Bind(shader);
     _LkGui_VertexArray_Bind(va);
-    _LkGui_IndexBuffer_Bind(ib->ID);
-    // printf("IndexBuffer: %d, count: %d\n", ib->ID, ib->Count);
-    // printf("GetCount(ib->ID) == %d\n", _LkGui_IndexBuffer_GetCount(ib));
+    _LkGui_IndexBuffer_Bind(ib);
     LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(ib), GL_UNSIGNED_INT, NULL));
 }
 
-void _LkGui_Draw_NoIB(unsigned int va, unsigned int shader)
+void _LkGui_Draw_NoIB(unsigned int va, LkGui_Shader* shader)
 {
     _LkGui_Shader_Bind(shader);
     _LkGui_VertexArray_Bind(va);
@@ -37,7 +52,6 @@ void _LkGui_Draw_NoIB(unsigned int va, unsigned int shader)
 
 unsigned int _LkGui_CreateVertexArray()
 {
-    // unsigned int* va = (unsigned int*)malloc(sizeof(unsigned int));
     unsigned int va;
     glGenVertexArrays(1, &va);
     _LkGui_VertexArray_Bind(va);
@@ -64,11 +78,9 @@ void _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, unsigned int
     _LkGui_VertexBuffer_Bind(vb);
     unsigned int offset = 0;
     LkGui_VertexBufferElement* elements = layout->Elements;
-    // printf("Elements in layout: %d\n", elements->Count);
 
     for (unsigned int i = 0; i < layout->ElementCount; i++)
     {
-        // printf("Element %d\n", i);
         LkGui_VertexBufferElement element = elements[i];
         glEnableVertexAttribArray(i);
         unsigned int stride = _LkGui_VertexBufferLayout_GetStride(layout);
@@ -139,9 +151,9 @@ LkGui_IndexBuffer* _LkGui_CreateIndexBuffer(const void* data, unsigned int count
     return ib;
 }
 
-void _LkGui_IndexBuffer_Bind(unsigned int id)
+void _LkGui_IndexBuffer_Bind(LkGui_IndexBuffer* ib)
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->ID);
 }
 
 void _LkGui_IndexBuffer_Unbind(unsigned int id)
@@ -162,12 +174,12 @@ void _LkGui_DeleteBuffer(unsigned int id)
 //=============================================================================
 // [SECTION] Shaders
 //=============================================================================
-void _LkGui_Shader_Bind(unsigned int id)
+void _LkGui_Shader_Bind(LkGui_Shader* shader)
 {
-    glUseProgram(id);
+    glUseProgram(shader->ID);
 }
 
-void _LkGui_Shader_Unbind(unsigned int id)
+void _LkGui_Shader_Unbind(LkGui_Shader* shader)
 {
     glUseProgram(0);
 }
@@ -244,7 +256,7 @@ unsigned int _LkGui_CompileShader(const char* source, unsigned int type)
     return id;
 }
 
-unsigned int _LkGui_CreateShader(const char* filepath)
+LkGui_Shader* _LkGui_CreateShader(const char* filepath)
 {
     LkGui_ShaderProgramSource source = _LkGui_ParseShader(filepath);
     unsigned int program = glCreateProgram();
@@ -255,31 +267,82 @@ unsigned int _LkGui_CreateShader(const char* filepath)
     glAttachShader(program, fs);
     glLinkProgram(program);
     glValidateProgram(program);
-
     glDeleteShader(vs);
     glDeleteShader(fs);
 
+    LkGui_Shader* shader = LK_NEW(LkGui_Shader);
+    shader->ID = program;
     free((void*)source.VertexSource);
     free((void*)source.FragmentSource);
-
-    return program;
+    return shader;
 }
 
-bool _LkGui_GLCall(const char* function, const char* file, int line)
+void _LkGui_Shader_SetUniform1f(unsigned int shader_id, const char* loc, float val)
 {
-    unsigned int error;
-    while ((error = glGetError()))
-    {
-        printf("[OpenGL Error] (%d)\nFUNCTION: %s\nFILE: %s\n LINE: %d", error, function, file, line);
-        return false;
-    }
-    return true;
+    LK_GLCALL(glUniform1f(glGetUniformLocation(shader_id, loc), val));
 }
 
-void _LkGui_GLClearError()
+void _LkGui_Shader_SetUniform1u(unsigned int shader_id, const char* loc, unsigned int val)
 {
-    while (glGetError() != GL_NO_ERROR);
+    LK_GLCALL(glUniform1ui(glGetUniformLocation(shader_id, loc), val));
 }
+
+void _LkGui_Shader_SetUniformMat4f(unsigned int shader_id, const char* loc, mat4 mat)
+{
+    LK_GLCALL(glUniformMatrix4fv(glGetUniformLocation(shader_id, loc), 1, GL_FALSE, (GLfloat*)mat));
+}
+
+
+//=============================================================================
+// [SECTION] Drawing geometry
+//=============================================================================
+void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
+{
+    mat4 transformMatrix;
+    _LkGui_Math_Transform_Rectangle(p1, p2, transformMatrix);
+
+    LkGuiContext* ctx = LkGui_GetContext();
+    LkGui_Shader* transform_matrix_shader = ctx->BackendData->Shaders[LkGui_ShaderIndex_TransformMatrix];
+    _LkGui_Shader_Bind(transform_matrix_shader);
+    _LkGui_Shader_SetUniformMat4f(transform_matrix_shader->ID, "u_TransformMatrix", transformMatrix);
+    // Get outline shader
+    // LkGui_Shader* outline_shader = ctx->BackendData->Shaders[LkGui_ShaderIndex_Outline];
+    // _LkGui_Shader_Bind(outline_shader);
+    // glLineWidth(3.0f);
+    // glDrawArrays(GL_LINE_LOOP, 0, 4);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // _LkGui_Draw_AddOutline(5);
+}
+
+void _LkGui_Draw_AddOutline(float thickness)
+{
+    LkGuiContext* ctx = LkGui_GetContext();
+    LkGui_Shader* outline_shader = ctx->BackendData->Shaders[LkGui_ShaderIndex_Outline];
+    _LkGui_Shader_Bind(outline_shader);
+    glLineWidth(thickness);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+    _LkGui_Shader_Unbind(outline_shader);
+}
+
+
+
+//=============================================================================
+// [SECTION] Mathematics
+//=============================================================================
+void _LkGui_Math_Transform_Rectangle(LkVec2 p1, LkVec2 p2, mat4 mat)
+{
+    glm_mat4_identity(mat);
+    vec3 scale = { p2.x - p1.x, p2.y - p1.y, 1.0f };
+    glm_scale(mat, scale);
+    vec3 translation = { (p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f, 0.0f };
+    glm_translate(mat, translation);
+}
+
+
+
+
+
+
 
 
 //=============================================================================

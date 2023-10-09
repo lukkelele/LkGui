@@ -36,6 +36,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         ${GLFW3_LIBRARY}
+        cglm
 )
 
 file(COPY assets/ DESTINATION ${CMAKE_BINARY_DIR}/assets)
