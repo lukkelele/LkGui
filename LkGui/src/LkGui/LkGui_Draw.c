@@ -1,9 +1,9 @@
-//#include "LkGui.h"
-//#include "LkGui_Internal.h"
-#include "LkGui.h"
 #ifdef LK_IMPL_OPENGL_GLAD
 #include <glad/glad.h>
 #endif
+#include "LkGui.h"
+#include "LkGui_Impl_Glfw.h"
+
 
 struct LkGui_ShaderProgramSource
 {
@@ -311,6 +311,26 @@ LkGui_Shader* _LkGui_GetShader(int shader_idx)
 //=============================================================================
 // [SECTION] Drawing geometry
 //=============================================================================
+void LkGui_Draw_Rectangle(LkGui_Rectangle* rect)
+{
+    glm_mat4_identity(rect->Model); // temporary fix
+    LkVec2 p1, p2;
+    p1 = rect->P1;
+    p2 = rect->P2;
+    // Follow cursor with rectangle
+    LkVec2 mouse_pos_translation = LkGui_Mouse_GetPos();
+    _LkGui_Matrix_Translate(rect->Model, mouse_pos_translation);
+
+    LkGuiContext* ctx = LkGui_GetContext();
+    LK_ASSERT_RECTANGLE(rect);
+    LkGui_Shader* transform_shader = _LkGui_GetShader(LkGui_ShaderIndex_TransformMatrix);
+    _LkGui_Shader_Bind(transform_shader);
+    _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", rect->Model);
+    _LkGui_IndexBuffer_Bind(rect->IB);
+    _LkGui_VertexArray_Bind(rect->VA);
+    LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
+}
+
 void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
 {
     mat4 transformMatrix;
@@ -343,6 +363,38 @@ void _LkGui_Draw_AddOutline(float thickness)
     _LkGui_Shader_Unbind(outline_shader);
 }
 
+//=============================================================================
+// [SECTION] Keyboard and Mouse
+//=============================================================================
+bool LkGui_Mouse_IsButtonPressed(int mouse_code)
+{
+    LkGuiContext* ctx = LkGui_GetContext();
+    LK_ASSERT(ctx->GlfwWindowHandle);
+    int button_state = glfwGetMouseButton(ctx->GlfwWindowHandle, mouse_code);
+    return button_state == GLFW_PRESS;
+}
+
+LkVec2 LkGui_Mouse_GetPos()
+{
+    LkGuiContext* ctx = LkGui_GetContext();
+    LK_ASSERT(ctx->GlfwWindowHandle);
+    double x, y;
+    glfwGetCursorPos(ctx->GlfwWindowHandle, &x, &y);
+    LkVec2 pos = { x, y };
+    return pos;
+}
+
+float LkGui_Mouse_GetX()
+{
+    LkVec2 pos = LkGui_Mouse_GetPos();
+    return pos.x;
+}
+
+float LkGui_Mouse_GetY()
+{
+    LkVec2 pos = LkGui_Mouse_GetPos();
+    return pos.y;
+}
 
 //=============================================================================
 // [SECTION] Mathematics
@@ -358,7 +410,7 @@ void _LkGui_Matrix_Scale(mat4 mat, float scaler)
     glm_scale(mat, (vec3){scaler, scaler, scaler});
 }
 
-// In Pixel coordinates
+// In pixel coordinates
 void _LkGui_Matrix_Translate(mat4 mat, LkVec2 translation)
 {
     LkVec2 translation_ndc = _LkGui_Math_ConvertToNDC(translation);
@@ -369,15 +421,18 @@ LkVec2 _LkGui_Math_ConvertToNDC(LkVec2 pixel_coords)
 {
     LkGuiContext* ctx = LkGui_GetContext();
     LkVec2 windowSize = ctx->WindowSize;
-    LkVec2 ndcCoords;
-    ndcCoords.x = (2.0f * pixel_coords.x) / windowSize.x - 1.0f;
-    ndcCoords.y = 1.0f - (2.0f * pixel_coords.y) / windowSize.y;
-    printf("coords (%f, %f) --> ndc.x == %f, ndc.y == %f\n", pixel_coords.x, pixel_coords.y, ndcCoords.x, ndcCoords.y);
-    return ndcCoords;
+    LkVec2 ndc_coords;
+    ndc_coords.x = (2.0f * pixel_coords.x) / windowSize.x - 1.0f;
+    ndc_coords.y = 1.0f - (2.0f * pixel_coords.y) / windowSize.y;
+    // printf("coords (%f, %f) --> ndc.x == %f, ndc.y == %f\n", pixel_coords.x, pixel_coords.y, ndc_coords.x, ndc_coords.y);
+    return ndc_coords;
 }
 
-
-
+// TODO: add format message here with variadic args
+void _LkGui_Print_LkVec2(LkVec2 vec)
+{
+    printf("LkVec2: (%f, %f)\n", vec.x, vec.y);
+}
 
 
 

@@ -30,13 +30,14 @@
 #define LK_SHADER_PATH_TransformMatrix   "assets/shaders/basic_transform.shader"
 
 // Macros
-#define LK_UNUSED(_VAR)           ((void)(_VAR))
-#define LK_ASSERT(_EXPR)          assert(_EXPR)
-#define LK_ARRAYSIZE(_ARR)        ((int)(sizeof(_ARR) / sizeof(*(_ARR))))
-#define LK_NEW(_TYPE)             (_TYPE*)malloc(sizeof(_TYPE))
-#define LK_GLCALL(_FUNC)          _LkGui_GLClearError(); _FUNC; LK_ASSERT(_LkGui_GLCall(#_FUNC, __FILE__, __LINE__))
-#define LKVEC2(_x, _y)	          (LkVec2){_x, _y}
-#define LKVEC4(_x, _y, _w, _z)	  (LkVec4){_x, _y, _w, _z}
+#define LK_UNUSED(_VAR)               ((void)(_VAR))
+#define LK_ASSERT(_EXPR)              assert(_EXPR)
+#define LK_ARRAYSIZE(_ARR)            ((int)(sizeof(_ARR) / sizeof(*(_ARR))))
+#define LK_NEW(_TYPE)                 (_TYPE*)malloc(sizeof(_TYPE))
+#define LK_GLCALL(_FUNC)              _LkGui_GLClearError(); _FUNC; LK_ASSERT(_LkGui_GLCall(#_FUNC, __FILE__, __LINE__))
+#define LK_ASSERT_RECTANGLE(_RECT)    LK_ASSERT(_RECT != NULL); LK_ASSERT(_RECT->VA); LK_ASSERT(_RECT->VB); LK_ASSERT(_RECT->IB)
+#define LKVEC2(_x, _y)	              (LkVec2){_x, _y}
+#define LKVEC4(_x, _y, _w, _z)	      (LkVec4){_x, _y, _w, _z}
 
 //=============================================================================
 // [SECTION] Declarations
@@ -61,8 +62,10 @@ typedef enum LkGui_ShaderType             LkGui_ShaderType;
 typedef enum LkGui_VertexBufferLayout_    LkGui_VertexBufferLayout_;
 typedef enum LkGui_ShaderIndex_           LkGui_ShaderIndex_;
 typedef enum LkGui_BlendFunc_             LkGui_BlendFunc_;
-typedef int LkGui_BlendFunc;
-typedef int LkGui_ShaderIndex;
+typedef mat3                              LkMat3;
+typedef mat4                              LkMat4;
+typedef int                               LkGui_BlendFunc;
+typedef int                               LkGui_ShaderIndex;
 
 
 //=============================================================================
@@ -196,19 +199,27 @@ void                      _LkGui_Shader_SetUniform1u(LkGui_Shader* shader, const
 void                      _LkGui_Shader_SetUniformMat4f(LkGui_Shader* shader, const char* loc, mat4 mat);
 LkGui_Shader*             _LkGui_GetShader(int shader_idx);
 
+//=============================================================================
+// [SECTION] Keyboard and Mouse
+//=============================================================================
+bool   LkGui_Mouse_IsButtonPressed(int mouse_code);
+LkVec2 LkGui_Mouse_GetPos();
+float  LkGui_Mouse_GetX();
+float  LkGui_Mouse_GetY();
+
 
 //=============================================================================
 // [SECTION] Drawing geometry
 //=============================================================================
+void LkGui_Draw_Rectangle(LkGui_Rectangle* rect);
 void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2);
 void _LkGui_Draw_AddOutline(float thickness);
-
+void _LkGui_Print_LkVec2(LkVec2 vec);
 
 //=============================================================================
 // [SECTION] Mathematics
 //=============================================================================
-// Matrices
-void _LkGui_Math_Transform_Rectangle(LkVec2 p1, LkVec2 p2, mat4 mat);
+void _LkGui_Math_Transform_Rectangle(LkVec2 p1, LkVec2 p2, mat4 mat); // FIXME
 // 2D Matrix operations
 void _LkGui_Matrix_Scale(mat4 mat, float scaler);
 void _LkGui_Matrix_Translate(mat4 mat, LkVec2 translation); // Uses pixel coordinates
@@ -235,12 +246,17 @@ struct LkGui_GeometryStorage
 
 struct LkGui_Rectangle
 {
-    LkVec2 P1;
-    LkVec2 P2;
+    LkVec2              P1; // Lower diagonal vertex
+    LkVec2              P2; // Higher diagonal vertex
     LkGui_VertexArray*  VA;
     LkGui_VertexBuffer* VB;
     LkGui_IndexBuffer*  IB;
     unsigned int        VertexBufferSize;
+    LkVec2              Translation;
+    LkVec2              Scale;
+    LkMat4              Model;
+    LkMat4*             _Model;
+    LkMat4              ModelViewProjection;
 };
 
 

@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <GLFW/glfw3.h>
-#include "LkGui_Impl_Base.h"
 
 // Forward declarations
 typedef struct GLFWwindow  GLFWwindow;

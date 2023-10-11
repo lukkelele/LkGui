@@ -29,6 +29,7 @@ void LkGui_Init()
     rect->VB = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
     rect->IB = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
     rect->VertexBufferSize = LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex);
+    glm_mat4_identity(rect->Model); // doesnt really work
     printf("Rect vertexbuffersize: %d\n", rect->VertexBufferSize);
     _LkGui_VertexArray_AddBuffer(rect->VA, rect->VB, LkGui_VertexBufferLayout_VertCoords);
     LK_ASSERT(rect->VB);
