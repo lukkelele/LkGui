@@ -40,8 +40,8 @@ int main()
         //_LkGui_Shader_Bind(shader);
         //_LkGui_VertexArray_Bind(va);
         //_LkGui_IndexBuffer_Bind(ib);
-        LkVec2 p1 = {1, 0};
-        LkVec2 p2 = {2, 1};
+        LkVec2 p1 = {-0.50f, -0.50f};
+        LkVec2 p2 = {0.50f, 0.50f};
         _LkGui_Draw_Rectangle(p1, p2);
 
         // _LkGui_Draw(va, ib, shader);

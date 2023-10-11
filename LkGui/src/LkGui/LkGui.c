@@ -9,6 +9,7 @@ LkGuiContext* LkGui_MainContext;
 LkGuiContext* LkGui_CreateContext()
 {
     LkGui_MainContext = LK_NEW(LkGuiContext);
+    LkGui_MainContext->MainViewport = NULL;
     LkGui_MainContext->MainWindow = NULL;
     LkGui_MainContext->BackendData = LK_NEW(LkGui_BackendData);
     LkGui_MainContext->BackendData->Shaders[0];

@@ -30,12 +30,13 @@
 #define LK_SHADER_PATH_TransformMatrix   "assets/shaders/basic_transform.shader"
 
 // Macros
-#define LK_UNUSED(_VAR)        ((void)(_VAR))
-#define LK_ASSERT(_EXPR)       assert(_EXPR)
-#define LK_ARRAYSIZE(_ARR)     ((int)(sizeof(_ARR) / sizeof(*(_ARR))))
-#define LK_NEW(_TYPE)          (_TYPE*)malloc(sizeof(_TYPE))
-#define LK_GLCALL(_FUNC)       _LkGui_GLClearError(); _FUNC; LK_ASSERT(_LkGui_GLCall(#_FUNC, __FILE__, __LINE__))
-
+#define LK_UNUSED(_VAR)           ((void)(_VAR))
+#define LK_ASSERT(_EXPR)          assert(_EXPR)
+#define LK_ARRAYSIZE(_ARR)        ((int)(sizeof(_ARR) / sizeof(*(_ARR))))
+#define LK_NEW(_TYPE)             (_TYPE*)malloc(sizeof(_TYPE))
+#define LK_GLCALL(_FUNC)          _LkGui_GLClearError(); _FUNC; LK_ASSERT(_LkGui_GLCall(#_FUNC, __FILE__, __LINE__))
+#define LKVEC2(_x, _y)	          (LkVec2){_x, _y}
+#define LKVEC4(_x, _y, _w, _z)	  (LkVec4){_x, _y, _w, _z}
 
 //=============================================================================
 // [SECTION] Declarations
@@ -156,20 +157,6 @@ enum LkGui_BlendFunc
     LkGui_BlendFunc_SrcAlpha_OneMinusDistantAlpha = 1 << 1,
 };
 
-struct LkGui_GeometryStorage
-{
-    LkGui_Rectangle* Rectangle;
-};
-
-struct LkGui_Rectangle
-{
-    LkGui_VertexArray*  VA;
-    LkGui_VertexBuffer* VB;
-    LkGui_IndexBuffer*  IB;
-    unsigned int        VertexBufferSize;
-};
-
-
 //=============================================================================
 // [SECTION] Renderer
 //=============================================================================
@@ -204,9 +191,9 @@ LkGui_Shader*             _LkGui_CreateShader(const char* filepath);
 unsigned int              _LkGui_CompileShader(const char* source, unsigned int type);
 static unsigned int       _LkGui_CheckShaderCompilation(unsigned int shader_id, LkGui_ShaderType type);
 LkGui_ShaderProgramSource _LkGui_ParseShader(const char* filepath);
-void                      _LkGui_Shader_SetUniform1f(unsigned int shader_id, const char* loc, float val);
-void                      _LkGui_Shader_SetUniform1u(unsigned int shader_id, const char* loc, unsigned int val);
-void                      _LkGui_Shader_SetUniformMat4f(unsigned int shader_id, const char* loc, mat4 mat);
+void                      _LkGui_Shader_SetUniform1f(LkGui_Shader* shader, const char* loc, float val);
+void                      _LkGui_Shader_SetUniform1u(LkGui_Shader* shader, const char* loc, unsigned int val);
+void                      _LkGui_Shader_SetUniformMat4f(LkGui_Shader* shader, const char* loc, mat4 mat);
 LkGui_Shader*             _LkGui_GetShader(int shader_idx);
 
 
@@ -220,7 +207,12 @@ void _LkGui_Draw_AddOutline(float thickness);
 //=============================================================================
 // [SECTION] Mathematics
 //=============================================================================
+// Matrices
 void _LkGui_Math_Transform_Rectangle(LkVec2 p1, LkVec2 p2, mat4 mat);
+// 2D Matrix operations
+void _LkGui_Matrix_Scale(mat4 mat, float scaler);
+void _LkGui_Matrix_Translate(mat4 mat, LkVec2 translation); // Uses pixel coordinates
+LkVec2 _LkGui_Math_ConvertToNDC(LkVec2 pixelCoords);
 
 
 //=============================================================================
@@ -235,6 +227,23 @@ char* _LkGui_ReadFile(const char* filepath);
 //
 // Index buffers need to be 'unsigned int', won't work otherwise
 //=============================================================================
+
+struct LkGui_GeometryStorage
+{
+    LkGui_Rectangle* Rectangle;
+};
+
+struct LkGui_Rectangle
+{
+    LkVec2 P1;
+    LkVec2 P2;
+    LkGui_VertexArray*  VA;
+    LkGui_VertexBuffer* VB;
+    LkGui_IndexBuffer*  IB;
+    unsigned int        VertexBufferSize;
+};
+
+
 extern float _LkGui_Geometry_Box_Vertices_NoTex[8];
 extern float _LkGui_Geometry_Box_Vertices_NoTex_NoIb[12];
 extern float _LkGui_Geometry_Cube_Vertices_NoTex[8 * 3];

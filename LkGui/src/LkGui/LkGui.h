@@ -11,9 +11,13 @@ typedef struct LkGuiContext    LkGuiContext;
 
 struct LkGuiContext
 {
-    void*                   MainWindow;
+    void*                   MainViewport;
+    void* 					MainWindow;
+    void*                   GlfwWindowHandle;
     LkGui_BackendData*      BackendData;
     LkGui_GeometryStorage*  GeometryStorage;
+    LkVec2                  WindowSize;
+    LkVec2                  ViewportSize;
 };
 
 //=============================================================================

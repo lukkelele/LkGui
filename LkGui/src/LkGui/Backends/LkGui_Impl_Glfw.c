@@ -29,7 +29,9 @@ GLFWwindow* LkGui_ImplGlfw_CreateWindow(const char* title, uint16_t width, uint1
     glfwMakeContextCurrent(glfwData->MainWindowHandle);
 
     LkGuiContext* ctx = LkGui_GetContext();
-    ctx->MainWindow = glfwData->MainWindowHandle;
+    ctx->GlfwWindowHandle = glfwData->MainWindowHandle;
+    ctx->ViewportSize = LKVEC2(width, height);
+    ctx->WindowSize = LKVEC2(width, height);
 
     return glfwData->MainWindowHandle;
 }

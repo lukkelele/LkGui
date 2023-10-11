@@ -282,19 +282,24 @@ LkGui_Shader* _LkGui_CreateShader(const char* filepath)
     return shader;
 }
 
-void _LkGui_Shader_SetUniform1f(unsigned int shader_id, const char* loc, float val)
+void _LkGui_Shader_SetUniform1f(LkGui_Shader* shader, const char* loc, float val)
 {
-    LK_GLCALL(glUniform1f(glGetUniformLocation(shader_id, loc), val));
+    LK_GLCALL(glUniform1f(glGetUniformLocation(shader->ID, loc), val));
 }
 
-void _LkGui_Shader_SetUniform1u(unsigned int shader_id, const char* loc, unsigned int val)
+void _LkGui_Shader_SetUniform1u(LkGui_Shader* shader, const char* loc, unsigned int val)
 {
-    LK_GLCALL(glUniform1ui(glGetUniformLocation(shader_id, loc), val));
+    LK_GLCALL(glUniform1ui(glGetUniformLocation(shader->ID, loc), val));
 }
 
-void _LkGui_Shader_SetUniformMat4f(unsigned int shader_id, const char* loc, mat4 mat)
+// TODO: Cache uniform locations
+void _LkGui_Shader_SetUniformMat4f(LkGui_Shader* shader, const char* loc, mat4 mat)
 {
-    LK_GLCALL(glUniformMatrix4fv(glGetUniformLocation(shader_id, loc), 1, GL_FALSE, (GLfloat*)mat));
+    _LkGui_Shader_Bind(shader);
+    int u_loc = glGetUniformLocation(shader->ID, loc);// 1, GL_FALSE, (GLfloat*)mat);
+    // printf("Shader mat4f, u_loc == %d\n", u_loc);
+    if (u_loc == GL_INVALID_VALUE) printf("u_loc == INVALID VALUE\n");
+    LK_GLCALL(glUniformMatrix4fv(u_loc, 1, GL_FALSE, (GLfloat*)mat));
 }
 
 LkGui_Shader* _LkGui_GetShader(int shader_idx)
@@ -309,6 +314,7 @@ LkGui_Shader* _LkGui_GetShader(int shader_idx)
 void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
 {
     mat4 transformMatrix;
+    glm_mat4_identity(transformMatrix);
     _LkGui_Math_Transform_Rectangle(p1, p2, transformMatrix);
 
     LkGuiContext* ctx = LkGui_GetContext();
@@ -317,7 +323,11 @@ void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
     LK_ASSERT(rect->VA != NULL);
     LK_ASSERT(rect->VB != NULL);
     LK_ASSERT(rect->IB != NULL);
-    _LkGui_Shader_Bind(_LkGui_GetShader(LkGui_ShaderIndex_Normal));
+    // _LkGui_Shader_Bind(_LkGui_GetShader(LkGui_ShaderIndex_Normal));
+    LkGui_Shader* transform_shader = _LkGui_GetShader(LkGui_ShaderIndex_TransformMatrix);
+    _LkGui_Shader_Bind(transform_shader);
+    // _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", identity_mat);
+    _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", transformMatrix);
     _LkGui_IndexBuffer_Bind(rect->IB);
     _LkGui_VertexArray_Bind(rect->VA);
     LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
@@ -334,20 +344,37 @@ void _LkGui_Draw_AddOutline(float thickness)
 }
 
 
-
 //=============================================================================
 // [SECTION] Mathematics
 //=============================================================================
 void _LkGui_Math_Transform_Rectangle(LkVec2 p1, LkVec2 p2, mat4 mat)
 {
-    glm_mat4_identity(mat);
-    vec3 scale = { p2.x - p1.x, p2.y - p1.y, 1.0f };
-    glm_scale(mat, scale);
-    vec3 translation = { (p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f, 0.0f };
-    glm_translate(mat, translation);
+    _LkGui_Matrix_Translate(mat, LKVEC2(1200.0f, 600.0f));
+    _LkGui_Matrix_Scale(mat, 0.50f);
 }
 
+void _LkGui_Matrix_Scale(mat4 mat, float scaler)
+{
+    glm_scale(mat, (vec3){scaler, scaler, scaler});
+}
 
+// In Pixel coordinates
+void _LkGui_Matrix_Translate(mat4 mat, LkVec2 translation)
+{
+    LkVec2 translation_ndc = _LkGui_Math_ConvertToNDC(translation);
+    glm_translate(mat, (vec3){translation_ndc.x, translation_ndc.y, 0.0f});
+}
+
+LkVec2 _LkGui_Math_ConvertToNDC(LkVec2 pixel_coords)
+{
+    LkGuiContext* ctx = LkGui_GetContext();
+    LkVec2 windowSize = ctx->WindowSize;
+    LkVec2 ndcCoords;
+    ndcCoords.x = (2.0f * pixel_coords.x) / windowSize.x - 1.0f;
+    ndcCoords.y = 1.0f - (2.0f * pixel_coords.y) / windowSize.y;
+    printf("coords (%f, %f) --> ndc.x == %f, ndc.y == %f\n", pixel_coords.x, pixel_coords.y, ndcCoords.x, ndcCoords.y);
+    return ndcCoords;
+}
 
 
 
