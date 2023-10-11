@@ -1,6 +1,6 @@
 target_sources(${PROJECT_NAME} 
   PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/LkGui_Impl_Base.h
+    #${CMAKE_CURRENT_LIST_DIR}/LkGui_Impl_Base.h
     ${CMAKE_CURRENT_LIST_DIR}/LkGui_Impl_Glfw.h
     ${CMAKE_CURRENT_LIST_DIR}/LkGui_Impl_Glfw.c
     ${CMAKE_CURRENT_LIST_DIR}/LkGui_Impl_OpenGL3.h

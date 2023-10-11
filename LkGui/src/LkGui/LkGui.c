@@ -1,12 +1,52 @@
 #include "LkGui.h"
 
 
+LkGuiContext* LkGui_MainContext;
 
 //=============================================================================
 // [SECTION] LkGui API
 //=============================================================================
+LkGuiContext* LkGui_CreateContext()
+{
+    LkGui_MainContext = LK_NEW(LkGuiContext);
+    LkGui_MainContext->MainWindow = NULL;
+    LkGui_MainContext->BackendData = LK_NEW(LkGui_BackendData);
+    LkGui_MainContext->BackendData->Shaders[0];
+
+    return LkGui_MainContext;
+}
+
+void LkGui_Init()
+{
+    _LkGui_Context_Init_BackendData(LkGui_MainContext->BackendData);
+    // Initiate geometry collection
+    LkGui_MainContext->GeometryStorage = LK_NEW(LkGui_GeometryStorage);
+    LkGui_GeometryStorage* geo_storage = LkGui_MainContext->GeometryStorage;
+    LkGui_Rectangle* rect = geo_storage->Rectangle;
+    rect = LK_NEW(LkGui_Rectangle);
+    rect->VA = _LkGui_CreateVertexArray();
+    rect->VB = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
+    rect->IB = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
+    _LkGui_VertexArray_AddBuffer(rect->VA, rect->VB, LkGui_VertexBufferLayout_VertCoords);
+}
+
+LkGuiContext* LkGui_GetContext()
+{
+    if (LkGui_MainContext == NULL)
+    {
+        printf("You need to create a LkGui context before using any other functions! Call LkGui_CreateContext()\n");
+        exit(1);
+    }
+    return LkGui_MainContext;
+}
 
 
+void _LkGui_Context_Init_BackendData(LkGui_BackendData* backendData)
+{
+    backendData->Shaders[LkGui_ShaderIndex_Normal] = _LkGui_CreateShader(LK_SHADER_PATH_BasicColor);
+    backendData->Shaders[LkGui_ShaderIndex_Outline] = _LkGui_CreateShader(LK_SHADER_PATH_Outline);
+    backendData->Shaders[LkGui_ShaderIndex_TransformMatrix] = _LkGui_CreateShader(LK_SHADER_PATH_TransformMatrix);
+}
 
 
 //=============================================================================

@@ -2,18 +2,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 //===================================================================
-// Core
-#include "LkGui/Core/Logger.h"
-#include "LkGui/Core/Context.h"
-// Backend
 #include "LkGui/Backends/LkGui_Impl_Glfw.h"
 #include "LkGui/Backends/LkGui_Impl_OpenGL4.h"
 //===================================================================
-#include "LkGui/LkGui_Internal.h"
-
+#include "LkGui/LkGui.h"
 #define WINDOW_TITLE  "LkGui"
 #define WINDOW_WIDTH  1920
 #define WINDOW_HEIGHT 1080
+
 
 int main()
 {
@@ -22,17 +18,19 @@ int main()
     LkGui_ImplGlfw_CreateWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL);
     GLFWwindow* glfwWindow = LkGui_ImplGlfw_GetMainWindow();
     LkGui_ImplOpenGL4_Init();
-    _LkGui_Context_Init_BackendData(ctx->BackendData); /* Needs to be run AFTER OpenGL instantiation */
+    LkGui_Init();
+    // _LkGui_Context_Init_BackendData(ctx->BackendData); /* Needs to be run AFTER OpenGL instantiation */
 
-    unsigned int va, vb;
+    LkGui_VertexArray* va;
+    LkGui_VertexBuffer* vb;
     LkGui_IndexBuffer* ib;
     va = _LkGui_CreateVertexArray();
     vb = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
     ib = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
     _LkGui_VertexArray_AddBuffer(va, vb, LkGui_VertexBufferLayout_VertCoords);
 
-    LkGui_Shader* shader = _LkGui_CreateShader("assets/shaders/simple.shader");
-    LkGui_Shader* outline_shader = _LkGui_CreateShader("assets/shaders/outline.shader");
+    LkGui_Shader* shader = _LkGui_GetShader(LkGui_ShaderIndex_Normal);
+    LkGui_Shader* outline_shader = _LkGui_GetShader(LkGui_ShaderIndex_Outline);
 
     while (!glfwWindowShouldClose(glfwWindow))
     {

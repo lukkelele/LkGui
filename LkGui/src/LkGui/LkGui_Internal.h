@@ -8,47 +8,88 @@
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
-
-#ifdef LKGUI_IMPL_OPENGL_GLAD
-    #include <glad/glad.h>
-#endif // LKGUI_IMPL_OPENGL_GLAD
 #include <cglm/cglm.h>
-#include "LkGui/Core/Context.h" // move to LkGui.h
 
 #define LK_NO_ERROR 0
 #define LK_ERROR    1
+#define LK_2D_VERTEX_SIZE 2
+#define LK_3D_VERTEX_SIZE 3
+#define LK_MAX_VERTEXBUFFERLAYOUT_SIZE 200
+#define LK_NO_INSTANT_CALLBACKS       0
+#define LK_INSTANT_CALLBACKS          1
+#define LK_BLENDING_DISABLE           0
+#define LK_BLENDING_ENABLE            1
+#define LK_DEPTH_DISABLE              0
+#define LK_DEPTH_ENABLE               1
+#define LK_LINE_ANTIALIASING_DISABLE  0
+#define LK_LINE_ANTIALIASING_ENABLE   1
+#define LK_MAX_ALLOWED_SHADERS        60
+// #define LK_SHADER_PATH_BasicColor        "assets/shaders/basic_color.shader"
+#define LK_SHADER_PATH_BasicColor        "assets/shaders/simple.shader"
+#define LK_SHADER_PATH_Outline           "assets/shaders/outline.shader"
+#define LK_SHADER_PATH_TransformMatrix   "assets/shaders/basic_transform.shader"
 
+// Macros
 #define LK_UNUSED(_VAR)        ((void)(_VAR))
 #define LK_ASSERT(_EXPR)       assert(_EXPR)
 #define LK_ARRAYSIZE(_ARR)     ((int)(sizeof(_ARR) / sizeof(*(_ARR))))
 #define LK_NEW(_TYPE)          (_TYPE*)malloc(sizeof(_TYPE))
 #define LK_GLCALL(_FUNC)       _LkGui_GLClearError(); _FUNC; LK_ASSERT(_LkGui_GLCall(#_FUNC, __FILE__, __LINE__))
 
-#define LK_2D_VERTEX_SIZE 2
-#define LK_3D_VERTEX_SIZE 3
-#define LKGUI_MAX_VERTEXBUFFERLAYOUT_SIZE 200
 
 //=============================================================================
 // [SECTION] Declarations
 //=============================================================================
+typedef struct LkGui_VertexArray          LkGui_VertexArray;
+typedef struct LkGui_VertexBuffer         LkGui_VertexBuffer;
+typedef struct LkGui_IndexBuffer          LkGui_IndexBuffer;
 typedef struct LkGui_VertexBufferElement  LkGui_VertexBufferElement;
 typedef struct LkGui_VertexBufferLayout   LkGui_VertexBufferLayout;
 typedef struct LkGui_ShaderProgramSource  LkGui_ShaderProgramSource;
-typedef struct LkGui_IndexBuffer          LkGui_IndexBuffer;
 typedef struct LkGui_DrawData             LkGui_DrawData;
 typedef struct LkGui_DrawCommand          LkGui_DrawCommand;
+typedef struct LkGui_BackendData          LkGui_BackendData;
+typedef struct LkGui_GeometryStorage      LkGui_GeometryStorage;
+typedef struct LkGui_Rectangle            LkGui_Rectangle;
+typedef struct LkGui_Shader               LkGui_Shader;
+typedef struct LkGui_Shaders              LkGui_Shaders;
 typedef struct LkVec2                     LkVec2;
 typedef struct LkVec3                     LkVec3;
 typedef struct LkVec4                     LkVec4;
-// typedef float  LkVec2[2];
-// typedef float  LkVec3[3];
-// typedef float  LkVec4[4];
 typedef enum LkGui_ShaderType             LkGui_ShaderType;
 typedef enum LkGui_VertexBufferLayout_    LkGui_VertexBufferLayout_;
+typedef enum LkGui_ShaderIndex_           LkGui_ShaderIndex_;
+typedef enum LkGui_BlendFunc_             LkGui_BlendFunc_;
+typedef int LkGui_BlendFunc;
+typedef int LkGui_ShaderIndex;
+
 
 //=============================================================================
 // [SECTION] Definitions
 //=============================================================================
+struct LkGui_BackendData
+{
+    bool VSyncEnabled;
+    bool DepthEnabled;
+    bool CullingEnabled;
+    bool BlendingEnabled;
+    bool LineAntiAliasing;
+    bool PointAntiAliasing;
+    bool PolygonAntiAliasing;
+
+    LkGui_Shader* Shaders[20];
+};
+
+struct LkGui_VertexArray
+{
+    unsigned int ID;
+};
+
+struct LkGui_VertexBuffer
+{
+    unsigned int ID;
+};
+
 struct LkGui_VertexBufferElement
 {
     unsigned int  Type;
@@ -58,7 +99,7 @@ struct LkGui_VertexBufferElement
 
 struct LkGui_VertexBufferLayout
 {
-    LkGui_VertexBufferElement Elements[LKGUI_MAX_VERTEXBUFFERLAYOUT_SIZE];
+    LkGui_VertexBufferElement Elements[LK_MAX_VERTEXBUFFERLAYOUT_SIZE];
     unsigned int ElementCount;
     unsigned int Stride;
 };
@@ -67,6 +108,23 @@ struct LkGui_IndexBuffer
 {
     unsigned int ID;
     unsigned int Count;
+};
+
+struct LkGui_Shader
+{
+    unsigned int ID;
+};
+
+struct LkGui_Shaders
+{
+    LkGui_Shader Collection[20];
+};
+
+enum LkGui_ShaderIndex_
+{
+    LkGui_ShaderIndex_Normal          = 0,
+    LkGui_ShaderIndex_Outline         = 1,
+    LkGui_ShaderIndex_TransformMatrix = 2,
 };
 
 struct LkGui_DrawData
@@ -91,30 +149,49 @@ enum LkGui_VertexBufferLayout_
     LkGui_VertexBufferLayout_VertTexCoords = 4,
 };
 
+enum LkGui_BlendFunc
+{
+    LkGui_BlendFunc_None                          = 0,
+    LkGui_BlendFunc_SrcAlpha_OneMinusSrcAlpha     = 1 << 0,
+    LkGui_BlendFunc_SrcAlpha_OneMinusDistantAlpha = 1 << 1,
+};
+
+struct LkGui_GeometryStorage
+{
+    LkGui_Rectangle* Rectangle;
+};
+
+struct LkGui_Rectangle
+{
+    LkGui_VertexArray*  VA;
+    LkGui_VertexBuffer* VB;
+    LkGui_IndexBuffer*  IB;
+};
+
 
 //=============================================================================
 // [SECTION] Renderer
 //=============================================================================
-void               _LkGui_Draw(unsigned int va, LkGui_IndexBuffer* ib, LkGui_Shader* shader);
-void               _LkGui_Draw_NoIB(unsigned int va, LkGui_Shader* shader);
-unsigned int       _LkGui_CreateVertexArray();
-void               _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, unsigned int layout);
-void               _LkGui_VertexArray_Bind(unsigned int id);
-void               _LkGui_VertexArray_Unbind(unsigned int id /* could be skipped but for verbose purposes let stay */);
-unsigned int       _LkGui_CreateVertexBuffer(float* _vertices, unsigned int _arrsize);
-void               _LkGui_VertexBuffer_Bind(unsigned int id);
-void               _LkGui_VertexBuffer_Unbind(unsigned int id);
-void               _LkGui_VertexBufferLayout_Init(LkGui_VertexBufferLayout* layout);
-void               _LkGui_VertexBufferLayout_Push_Float(LkGui_VertexBufferLayout* layout, unsigned int count);
-unsigned int       _LkGui_VertexBufferElement_GetSizeOfType(unsigned int type);
-unsigned int       _LkGui_VertexBufferLayout_GetStride(LkGui_VertexBufferLayout* layout);
-LkGui_IndexBuffer* _LkGui_CreateIndexBuffer(const void* data, unsigned int count);
-void               _LkGui_IndexBuffer_Bind(LkGui_IndexBuffer* ib);
-void               _LkGui_IndexBuffer_Unbind(unsigned int id);
-unsigned int       _LkGui_IndexBuffer_GetCount(LkGui_IndexBuffer* ib);
-void               _LkGui_DeleteBuffer(unsigned int id);
-bool               _LkGui_GLCall(const char* function, const char* file, int line);
-void               _LkGui_GLClearError();
+void                  _LkGui_Draw(LkGui_VertexArray* va, LkGui_IndexBuffer* ib, LkGui_Shader* shader);
+void                  _LkGui_Draw_NoIB(LkGui_VertexArray* va, LkGui_Shader* shader);
+LkGui_VertexArray*    _LkGui_CreateVertexArray();
+void                  _LkGui_VertexArray_AddBuffer(LkGui_VertexArray* va, LkGui_VertexBuffer* vb, unsigned int layout);
+void                  _LkGui_VertexArray_Bind(LkGui_VertexArray* va);
+void                  _LkGui_VertexArray_Unbind(LkGui_VertexArray* va /* could be skipped but for verbose purposes let stay */);
+LkGui_VertexBuffer*   _LkGui_CreateVertexBuffer(float* _vertices, unsigned int _arrsize);
+void                  _LkGui_VertexBuffer_Bind(LkGui_VertexBuffer* vb);
+void                  _LkGui_VertexBuffer_Unbind(LkGui_VertexBuffer* vb);
+void                  _LkGui_VertexBufferLayout_Init(LkGui_VertexBufferLayout* layout);
+void                  _LkGui_VertexBufferLayout_Push_Float(LkGui_VertexBufferLayout* layout, unsigned int count);
+unsigned int          _LkGui_VertexBufferElement_GetSizeOfType(unsigned int type);
+unsigned int          _LkGui_VertexBufferLayout_GetStride(LkGui_VertexBufferLayout* layout);
+LkGui_IndexBuffer*    _LkGui_CreateIndexBuffer(const void* data, unsigned int count);
+void                  _LkGui_IndexBuffer_Bind(LkGui_IndexBuffer* ib);
+void                  _LkGui_IndexBuffer_Unbind(unsigned int id);
+unsigned int          _LkGui_IndexBuffer_GetCount(LkGui_IndexBuffer* ib);
+void                  _LkGui_DeleteBuffer(unsigned int id);
+bool                  _LkGui_GLCall(const char* function, const char* file, int line);
+void                  _LkGui_GLClearError();
 
 
 //=============================================================================
@@ -129,6 +206,7 @@ LkGui_ShaderProgramSource _LkGui_ParseShader(const char* filepath);
 void                      _LkGui_Shader_SetUniform1f(unsigned int shader_id, const char* loc, float val);
 void                      _LkGui_Shader_SetUniform1u(unsigned int shader_id, const char* loc, unsigned int val);
 void                      _LkGui_Shader_SetUniformMat4f(unsigned int shader_id, const char* loc, mat4 mat);
+LkGui_Shader*             _LkGui_GetShader(int shader_idx);
 
 
 //=============================================================================

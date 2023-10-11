@@ -1,8 +1,8 @@
 #include "LkGui/Backends/LkGui_Impl_OpenGL4.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-#include "LkGui/Core/Context.h"
-
+#include "LkGui.h"
 
 void _LkGui_ImplOpenGL4_InitStruct()
 {
@@ -38,6 +38,7 @@ void LkGui_ImplOpenGL4_SetBlending(int blending_enabled)
     glDisable(GL_BLEND);
     ctx->BackendData->BlendingEnabled = false;
 }
+
 void LkGui_ImplOpenGL4_EnableBlending()  { LkGui_ImplOpenGL4_SetBlending(LK_BLENDING_ENABLE);  }
 void LkGui_ImplOpenGL4_DisableBlending() { LkGui_ImplOpenGL4_SetBlending(LK_BLENDING_DISABLE); }
 
@@ -53,6 +54,7 @@ void LkGui_ImplOpenGL4_SetDepth(int depth_enabled)
     glDisable(GL_DEPTH_TEST);
     ctx->BackendData->DepthEnabled = false;
 }
+
 void LkGui_ImplOpenGL4_EnableDepth()  { LkGui_ImplOpenGL4_SetDepth(LK_DEPTH_ENABLE);  }
 void LkGui_ImplOpenGL4_DisableDepth() { LkGui_ImplOpenGL4_SetDepth(LK_DEPTH_DISABLE); }
 

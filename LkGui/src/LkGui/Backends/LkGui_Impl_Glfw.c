@@ -1,5 +1,7 @@
 #include "LkGui/Backends/LkGui_Impl_Glfw.h"
-#include "LkGui/Core/Context.h"
+#include "LkGui/LkGui_Internal.h"
+#include "LkGui.h"
+
 
 LkGui_ImplGlfw_Data* _LkGui_ImplGlfw_Data = NULL;
 LkGui_ImplGlfw_Data* _LkGui_ImplGlfw_GetGlfwData() { return _LkGui_ImplGlfw_Data; }

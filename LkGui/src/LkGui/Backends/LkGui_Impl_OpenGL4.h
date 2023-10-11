@@ -1,11 +1,12 @@
 #ifndef LKGUI_IMPL_OPENGL4
 #define LKGUI_IMPL_OPENGL4
-// Glad
-#ifdef LKGUI_IMPL_OPENGL_GLAD
+
+#include <ctype.h>
+#include <stdbool.h>
+
+#ifdef LK_IMPL_OPENGL_GLAD
 #include <glad/glad.h>
 #endif
-//
-#include "LkGui_Impl_Base.h"
 
 
 typedef struct LkGui_ImplOpenGL4_Data LkGui_ImplOpenGL4_Data;

@@ -1,6 +1,9 @@
+//#include "LkGui.h"
+//#include "LkGui_Internal.h"
 #include "LkGui.h"
-#include "LkGui_Internal.h"
-
+#ifdef LK_IMPL_OPENGL_GLAD
+#include <glad/glad.h>
+#endif
 
 struct LkGui_ShaderProgramSource
 {
@@ -35,7 +38,7 @@ void _LkGui_GLClearError()
     while (glGetError() != GL_NO_ERROR);
 }
 
-void _LkGui_Draw(unsigned int va, LkGui_IndexBuffer* ib, LkGui_Shader* shader)
+void _LkGui_Draw(LkGui_VertexArray* va, LkGui_IndexBuffer* ib, LkGui_Shader* shader)
 {
     _LkGui_Shader_Bind(shader);
     _LkGui_VertexArray_Bind(va);
@@ -43,31 +46,32 @@ void _LkGui_Draw(unsigned int va, LkGui_IndexBuffer* ib, LkGui_Shader* shader)
     LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(ib), GL_UNSIGNED_INT, NULL));
 }
 
-void _LkGui_Draw_NoIB(unsigned int va, LkGui_Shader* shader)
+void _LkGui_Draw_NoIB(LkGui_VertexArray* va, LkGui_Shader* shader)
 {
     _LkGui_Shader_Bind(shader);
     _LkGui_VertexArray_Bind(va);
     LK_GLCALL(glDrawArrays(GL_TRIANGLES, 0, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex) / LK_2D_VERTEX_SIZE));
 }
 
-unsigned int _LkGui_CreateVertexArray()
+LkGui_VertexArray* _LkGui_CreateVertexArray()
 {
-    unsigned int va;
-    glGenVertexArrays(1, &va);
+    // unsigned int va;
+    LkGui_VertexArray* va = LK_NEW(LkGui_VertexArray);
+    glGenVertexArrays(1, &va->ID);
     _LkGui_VertexArray_Bind(va);
     return va;
 }
 
-unsigned int _LkGui_CreateVertexBuffer(float* _vertices, unsigned int _arrsize)
+LkGui_VertexBuffer* _LkGui_CreateVertexBuffer(float* _vertices, unsigned int _arrsize)
 {
-    unsigned int vb;
-    glGenBuffers(1, &vb);
-    glBindBuffer(GL_ARRAY_BUFFER, vb);
+    LkGui_VertexBuffer* vb = LK_NEW(LkGui_VertexBuffer);
+    glGenBuffers(1, &vb->ID);
+    glBindBuffer(GL_ARRAY_BUFFER, vb->ID);
     glBufferData(GL_ARRAY_BUFFER, _arrsize * sizeof(float), _vertices, GL_STATIC_DRAW);
     return vb;
 }
 
-void _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, unsigned int elements_per_vertex/*== LkGui_VertexBufferLayout enum*/)
+void _LkGui_VertexArray_AddBuffer(LkGui_VertexArray* va, LkGui_VertexBuffer* vb, unsigned int elements_per_vertex/*== LkGui_VertexBufferLayout enum*/)
 {
     // TODO: Struct to hold relevant data for vaos and vbos + layouts
     LkGui_VertexBufferLayout* layout = LK_NEW(LkGui_VertexBufferLayout);
@@ -90,22 +94,23 @@ void _LkGui_VertexArray_AddBuffer(unsigned int va, unsigned int vb, unsigned int
     free(layout);
 }
 
-void _LkGui_VertexArray_Bind(unsigned int _id)
+void _LkGui_VertexArray_Bind(LkGui_VertexArray* va)
 {
-    glBindVertexArray(_id);
+    printf("va->ID == %d\n", va->ID);
+    glBindVertexArray(va->ID);
 }
 
-void _LkGui_VertexBuffer_Bind(unsigned int _id)
+void _LkGui_VertexBuffer_Bind(LkGui_VertexBuffer* vb)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, _id);
+    glBindBuffer(GL_ARRAY_BUFFER, vb->ID);
 }
 
-void _LkGui_VertexArray_Unbind(unsigned int _id)
+void _LkGui_VertexArray_Unbind(LkGui_VertexArray* va)
 {
     glBindVertexArray(0);
 }
 
-void _LkGui_VertexBuffer_Unbind(unsigned int _id)
+void _LkGui_VertexBuffer_Unbind(LkGui_VertexBuffer* vb)
 {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -292,6 +297,11 @@ void _LkGui_Shader_SetUniformMat4f(unsigned int shader_id, const char* loc, mat4
     LK_GLCALL(glUniformMatrix4fv(glGetUniformLocation(shader_id, loc), 1, GL_FALSE, (GLfloat*)mat));
 }
 
+LkGui_Shader* _LkGui_GetShader(int shader_idx)
+{
+    LkGuiContext* ctx = LkGui_GetContext();
+    return ctx->BackendData->Shaders[shader_idx];
+}
 
 //=============================================================================
 // [SECTION] Drawing geometry

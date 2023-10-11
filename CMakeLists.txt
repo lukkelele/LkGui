@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(LKGUI_SOURCE_PATH "${PROJECT_SOURCE_DIR}/LkGui/src/LkGui")
+set(LKGUI_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/LkGui/src/LkGui")
 set(SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/LkGui/src")
 set(LKGUI_LIBS "${CMAKE_SOURCE_DIR}/lib")
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "GLFW lib only")
@@ -22,15 +22,23 @@ include(${SOURCE_PATH}/CMakeLists.txt)
 
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-        LKGUI_IMPL_OPENGL_GLAD
+        LK_IMPL_OPENGL_GLAD
 )
+
+#target_sources(${PROJECT_NAME}
+#    PUBLIC	${LKGUI_SOURCE_PATH}/LkGui.h
+#        ${LKGUI_SOURCE_PATH}/LkGui.c
+#)
+
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         ${SOURCE_PATH}
+        ${LKGUI_SOURCE_PATH}
         ${CMAKE_CURRENT_LIST_DIR}/lib
         ${LKGUI_LIBS}/glad/include
         ${GLFW3_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/LkGui/src/LkGui/Backends
 )
 
 target_link_libraries(${PROJECT_NAME}
