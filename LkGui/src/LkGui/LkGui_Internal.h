@@ -166,6 +166,7 @@ struct LkGui_Rectangle
     LkGui_VertexArray*  VA;
     LkGui_VertexBuffer* VB;
     LkGui_IndexBuffer*  IB;
+    unsigned int        VertexBufferSize;
 };
 
 

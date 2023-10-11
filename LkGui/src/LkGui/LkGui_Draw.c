@@ -96,7 +96,7 @@ void _LkGui_VertexArray_AddBuffer(LkGui_VertexArray* va, LkGui_VertexBuffer* vb,
 
 void _LkGui_VertexArray_Bind(LkGui_VertexArray* va)
 {
-    printf("va->ID == %d\n", va->ID);
+    // printf("va->ID == %d\n", va->ID);
     glBindVertexArray(va->ID);
 }
 
@@ -312,16 +312,15 @@ void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
     _LkGui_Math_Transform_Rectangle(p1, p2, transformMatrix);
 
     LkGuiContext* ctx = LkGui_GetContext();
-    LkGui_Shader* transform_matrix_shader = ctx->BackendData->Shaders[LkGui_ShaderIndex_TransformMatrix];
-    _LkGui_Shader_Bind(transform_matrix_shader);
-    _LkGui_Shader_SetUniformMat4f(transform_matrix_shader->ID, "u_TransformMatrix", transformMatrix);
-    // Get outline shader
-    // LkGui_Shader* outline_shader = ctx->BackendData->Shaders[LkGui_ShaderIndex_Outline];
-    // _LkGui_Shader_Bind(outline_shader);
-    // glLineWidth(3.0f);
-    // glDrawArrays(GL_LINE_LOOP, 0, 4);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    // _LkGui_Draw_AddOutline(5);
+    LkGui_Rectangle* rect = ctx->GeometryStorage->Rectangle;
+    LK_ASSERT(rect != NULL);
+    LK_ASSERT(rect->VA != NULL);
+    LK_ASSERT(rect->VB != NULL);
+    LK_ASSERT(rect->IB != NULL);
+    _LkGui_Shader_Bind(_LkGui_GetShader(LkGui_ShaderIndex_Normal));
+    _LkGui_IndexBuffer_Bind(rect->IB);
+    _LkGui_VertexArray_Bind(rect->VA);
+    LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
 }
 
 void _LkGui_Draw_AddOutline(float thickness)

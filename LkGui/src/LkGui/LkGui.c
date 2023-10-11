@@ -22,12 +22,16 @@ void LkGui_Init()
     // Initiate geometry collection
     LkGui_MainContext->GeometryStorage = LK_NEW(LkGui_GeometryStorage);
     LkGui_GeometryStorage* geo_storage = LkGui_MainContext->GeometryStorage;
+    geo_storage->Rectangle = LK_NEW(LkGui_Rectangle);
     LkGui_Rectangle* rect = geo_storage->Rectangle;
-    rect = LK_NEW(LkGui_Rectangle);
     rect->VA = _LkGui_CreateVertexArray();
     rect->VB = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
     rect->IB = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
+    rect->VertexBufferSize = LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex);
+    printf("Rect vertexbuffersize: %d\n", rect->VertexBufferSize);
     _LkGui_VertexArray_AddBuffer(rect->VA, rect->VB, LkGui_VertexBufferLayout_VertCoords);
+    LK_ASSERT(rect->VB);
+    LK_ASSERT(rect->IB);
 }
 
 LkGuiContext* LkGui_GetContext()
