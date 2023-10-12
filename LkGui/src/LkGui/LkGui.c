@@ -12,28 +12,15 @@ LkGuiContext* LkGui_CreateContext()
     LkGui_MainContext->MainViewport = NULL;
     LkGui_MainContext->MainWindow = NULL;
     LkGui_MainContext->BackendData = LK_NEW(LkGui_BackendData);
-    LkGui_MainContext->BackendData->Shaders[0];
+    // Do not run LkGui_Init() in here
 
     return LkGui_MainContext;
 }
 
 void LkGui_Init()
 {
-    _LkGui_Context_Init_BackendData(LkGui_MainContext->BackendData);
-    // Initiate geometry collection
-    LkGui_MainContext->GeometryStorage = LK_NEW(LkGui_GeometryStorage);
-    LkGui_GeometryStorage* geo_storage = LkGui_MainContext->GeometryStorage;
-    geo_storage->Rectangle = LK_NEW(LkGui_Rectangle);
-    LkGui_Rectangle* rect = geo_storage->Rectangle;
-    rect->VA = _LkGui_CreateVertexArray();
-    rect->VB = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
-    rect->IB = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
-    rect->VertexBufferSize = LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex);
-    glm_mat4_identity(rect->Model); // doesnt really work
-    printf("Rect vertexbuffersize: %d\n", rect->VertexBufferSize);
-    _LkGui_VertexArray_AddBuffer(rect->VA, rect->VB, LkGui_VertexBufferLayout_VertCoords);
-    LK_ASSERT(rect->VB);
-    LK_ASSERT(rect->IB);
+    LkGui_InitBackendData(LkGui_MainContext->BackendData);
+    LkGui_InitGeometryStorage(LkGui_MainContext->GeometryStorage);
 }
 
 LkGuiContext* LkGui_GetContext()
@@ -47,12 +34,52 @@ LkGuiContext* LkGui_GetContext()
 }
 
 
-void _LkGui_Context_Init_BackendData(LkGui_BackendData* backendData)
+void LkGui_InitBackendData(LkGui_BackendData* backendData)
 {
     backendData->Shaders[LkGui_ShaderIndex_Normal] = _LkGui_CreateShader(LK_SHADER_PATH_BasicColor);
     backendData->Shaders[LkGui_ShaderIndex_Outline] = _LkGui_CreateShader(LK_SHADER_PATH_Outline);
     backendData->Shaders[LkGui_ShaderIndex_TransformMatrix] = _LkGui_CreateShader(LK_SHADER_PATH_TransformMatrix);
 }
+
+void LkGui_InitGeometryStorage(LkGeometryStorage* geometry_storage)
+{
+    LkGui_MainContext->GeometryStorage = LK_NEW(LkGeometryStorage);
+    LkGeometryStorage* geo_storage = LkGui_MainContext->GeometryStorage;
+    for (int n = 0; n < LK_ARRAYSIZE(geo_storage->Rectangles); n++)
+    {
+        geo_storage->Rectangles[n] = NULL;
+    }
+    // geo_storage->Rectangles = (LkRectangle**)malloc(LK_ARRAYSIZE(geo_storage->Rectangles) * sizeof(LkRectangle*));
+    //geo_storage->Rectangles = (LkRectangle**)malloc(50 * sizeof(LkRectangle*));
+}
+
+void LkGui_CreateRectangle(LkVec2 p1, LkVec2 p2)
+{
+    LkGeometryStorage* geometry_storage = LkGui_MainContext->GeometryStorage;
+    LK_ASSERT(geometry_storage);
+    LK_ASSERT(geometry_storage->Rectangles);
+    // printf("LK_ARRAYSIZE(geometry_storage->Rectangles) == %d\n", LK_ARRAYSIZE(geometry_storage->Rectangles)); // prints 100 correctly
+    for (int rect_idx = 0; rect_idx < 10; rect_idx++)
+    {
+        LkRectangle* rect = geometry_storage->Rectangles[rect_idx];
+        if (!rect || rect_idx < LK_ARRAYSIZE(geometry_storage->Rectangles))
+        {
+            printf("Creating new rectangle at Rectangles[idx] == %d\n", rect_idx);
+            rect = LK_NEW(LkRectangle);
+            rect->VA = _LkGui_CreateVertexArray();
+            rect->VB = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
+            rect->IB = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
+            rect->VertexBufferSize = LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex);
+            LK_ASSERT_RECTANGLE(rect);
+            _LkGui_VertexArray_AddBuffer(rect->VA, rect->VB, LkGui_VertexBufferLayout_VertCoords);
+            glm_mat4_identity(rect->Model);
+            geometry_storage->Rectangles[rect_idx] = rect;
+            geometry_storage->RectangleCount++;
+            return; // Leave function after new rectangle has been created to not continously create new ones
+        }
+    }
+}
+
 
 
 //=============================================================================
@@ -81,3 +108,4 @@ char* _LkGui_ReadFile(const char* filepath)
     fclose(file);
     return data;
 }
+

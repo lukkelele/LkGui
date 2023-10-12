@@ -51,8 +51,8 @@ typedef struct LkGui_ShaderProgramSource  LkGui_ShaderProgramSource;
 typedef struct LkGui_DrawData             LkGui_DrawData;
 typedef struct LkGui_DrawCommand          LkGui_DrawCommand;
 typedef struct LkGui_BackendData          LkGui_BackendData;
-typedef struct LkGui_GeometryStorage      LkGui_GeometryStorage;
-typedef struct LkGui_Rectangle            LkGui_Rectangle;
+typedef struct LkGeometryStorage          LkGeometryStorage;
+typedef struct LkRectangle                LkRectangle;
 typedef struct LkGui_Shader               LkGui_Shader;
 typedef struct LkGui_Shaders              LkGui_Shaders;
 typedef struct LkVec2                     LkVec2;
@@ -211,7 +211,7 @@ float  LkGui_Mouse_GetY();
 //=============================================================================
 // [SECTION] Drawing geometry
 //=============================================================================
-void LkGui_Draw_Rectangle(LkGui_Rectangle* rect);
+void LkGui_Draw_Rectangle(LkRectangle* rect);
 void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2);
 void _LkGui_Draw_AddOutline(float thickness);
 void _LkGui_Print_LkVec2(LkVec2 vec);
@@ -239,12 +239,13 @@ char* _LkGui_ReadFile(const char* filepath);
 // Index buffers need to be 'unsigned int', won't work otherwise
 //=============================================================================
 
-struct LkGui_GeometryStorage
+struct LkGeometryStorage
 {
-    LkGui_Rectangle* Rectangle;
+    LkRectangle*   Rectangles[100];
+    unsigned int   RectangleCount;
 };
 
-struct LkGui_Rectangle
+struct LkRectangle
 {
     LkVec2              P1; // Lower diagonal vertex
     LkVec2              P2; // Higher diagonal vertex
@@ -260,12 +261,13 @@ struct LkGui_Rectangle
 };
 
 
+
+
 extern float _LkGui_Geometry_Box_Vertices_NoTex[8];
 extern float _LkGui_Geometry_Box_Vertices_NoTex_NoIb[12];
 extern float _LkGui_Geometry_Cube_Vertices_NoTex[8 * 3];
 extern unsigned int _LkGui_Geometry_Box_Indices[6];
 extern unsigned int _LkGui_Geometry_Cube_Indices[36];
-
 
 
 

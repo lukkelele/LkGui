@@ -311,7 +311,7 @@ LkGui_Shader* _LkGui_GetShader(int shader_idx)
 //=============================================================================
 // [SECTION] Drawing geometry
 //=============================================================================
-void LkGui_Draw_Rectangle(LkGui_Rectangle* rect)
+void LkGui_Draw_Rectangle(LkRectangle* rect)
 {
     glm_mat4_identity(rect->Model); // temporary fix
     LkVec2 p1, p2;
@@ -333,24 +333,24 @@ void LkGui_Draw_Rectangle(LkGui_Rectangle* rect)
 
 void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
 {
-    mat4 transformMatrix;
-    glm_mat4_identity(transformMatrix);
-    _LkGui_Math_Transform_Rectangle(p1, p2, transformMatrix);
+    // mat4 transformMatrix;
+    // glm_mat4_identity(transformMatrix);
+    // _LkGui_Math_Transform_Rectangle(p1, p2, transformMatrix);
 
-    LkGuiContext* ctx = LkGui_GetContext();
-    LkGui_Rectangle* rect = ctx->GeometryStorage->Rectangle;
-    LK_ASSERT(rect != NULL);
-    LK_ASSERT(rect->VA != NULL);
-    LK_ASSERT(rect->VB != NULL);
-    LK_ASSERT(rect->IB != NULL);
-    // _LkGui_Shader_Bind(_LkGui_GetShader(LkGui_ShaderIndex_Normal));
-    LkGui_Shader* transform_shader = _LkGui_GetShader(LkGui_ShaderIndex_TransformMatrix);
-    _LkGui_Shader_Bind(transform_shader);
-    // _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", identity_mat);
-    _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", transformMatrix);
-    _LkGui_IndexBuffer_Bind(rect->IB);
-    _LkGui_VertexArray_Bind(rect->VA);
-    LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
+    // LkGuiContext* ctx = LkGui_GetContext();
+    // LkRectangle* rect = ctx->GeometryStorage->Rectangle;
+    // LK_ASSERT(rect != NULL);
+    // LK_ASSERT(rect->VA != NULL);
+    // LK_ASSERT(rect->VB != NULL);
+    // LK_ASSERT(rect->IB != NULL);
+    // // _LkGui_Shader_Bind(_LkGui_GetShader(LkGui_ShaderIndex_Normal));
+    // LkGui_Shader* transform_shader = _LkGui_GetShader(LkGui_ShaderIndex_TransformMatrix);
+    // _LkGui_Shader_Bind(transform_shader);
+    // // _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", identity_mat);
+    // _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", transformMatrix);
+    // _LkGui_IndexBuffer_Bind(rect->IB);
+    // _LkGui_VertexArray_Bind(rect->VA);
+    // LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
 }
 
 void _LkGui_Draw_AddOutline(float thickness)

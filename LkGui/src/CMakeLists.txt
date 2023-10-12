@@ -6,5 +6,5 @@ target_sources(${PROJECT_NAME}
         ${CMAKE_CURRENT_LIST_DIR}/LkGui/LkGui_Draw.c
 )
 
-include(${CMAKE_CURRENT_LIST_DIR}/LkGui/Core/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/LkGui/Backends/CMakeLists.txt)
+#include(${CMAKE_CURRENT_LIST_DIR}/LkGui/Core/CMakeLists.txt)
