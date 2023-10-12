@@ -313,15 +313,17 @@ LkGui_Shader* _LkGui_GetShader(int shader_idx)
 //=============================================================================
 void LkGui_Draw_Rectangle(LkRectangle* rect)
 {
-    glm_mat4_identity(rect->Model); // temporary fix
+    LkGuiContext* ctx = LkGui_GetContext();
+    // Not used yet
     LkVec2 p1, p2;
     p1 = rect->P1;
     p2 = rect->P2;
-    // Follow cursor with rectangle
-    LkVec2 mouse_pos_translation = LkGui_Mouse_GetPos();
-    _LkGui_Matrix_Translate(rect->Model, mouse_pos_translation);
 
-    LkGuiContext* ctx = LkGui_GetContext();
+    bool mouse_left_click_pressed = LkGui_Mouse_IsButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
+    if (mouse_left_click_pressed)
+    {
+        _LkGui_Matrix_Translate(rect->Model, ctx->MousePosDiff);
+    }
     LK_ASSERT_RECTANGLE(rect);
     LkGui_Shader* transform_shader = _LkGui_GetShader(LkGui_ShaderIndex_TransformMatrix);
     _LkGui_Shader_Bind(transform_shader);
@@ -329,28 +331,8 @@ void LkGui_Draw_Rectangle(LkRectangle* rect)
     _LkGui_IndexBuffer_Bind(rect->IB);
     _LkGui_VertexArray_Bind(rect->VA);
     LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
-}
-
-void _LkGui_Draw_Rectangle(LkVec2 p1, LkVec2 p2)
-{
-    // mat4 transformMatrix;
-    // glm_mat4_identity(transformMatrix);
-    // _LkGui_Math_Transform_Rectangle(p1, p2, transformMatrix);
-
-    // LkGuiContext* ctx = LkGui_GetContext();
-    // LkRectangle* rect = ctx->GeometryStorage->Rectangle;
-    // LK_ASSERT(rect != NULL);
-    // LK_ASSERT(rect->VA != NULL);
-    // LK_ASSERT(rect->VB != NULL);
-    // LK_ASSERT(rect->IB != NULL);
-    // // _LkGui_Shader_Bind(_LkGui_GetShader(LkGui_ShaderIndex_Normal));
-    // LkGui_Shader* transform_shader = _LkGui_GetShader(LkGui_ShaderIndex_TransformMatrix);
-    // _LkGui_Shader_Bind(transform_shader);
-    // // _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", identity_mat);
-    // _LkGui_Shader_SetUniformMat4f(transform_shader, "u_TransformMatrix", transformMatrix);
-    // _LkGui_IndexBuffer_Bind(rect->IB);
-    // _LkGui_VertexArray_Bind(rect->VA);
-    // LK_GLCALL(glDrawElements(GL_TRIANGLES, _LkGui_IndexBuffer_GetCount(rect->IB), GL_UNSIGNED_INT, NULL));
+    glLineWidth(4);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
 }
 
 void _LkGui_Draw_AddOutline(float thickness)
@@ -396,6 +378,20 @@ float LkGui_Mouse_GetY()
     return pos.y;
 }
 
+void LkGui_Mouse_MoveCallback()
+{
+    LkGuiContext* ctx = LkGui_GetContext();
+    double x, y;
+    glfwGetCursorPos(ctx->GlfwWindowHandle, &x, &y);
+    // LkVec2 mouse_pos = LkGui_Mouse_GetPos();
+    LkVec2 mouse_pos = { x, y };
+    ctx->LastMousePos = ctx->MousePos;
+    ctx->MousePos = mouse_pos;
+    ctx->MousePosDiff = LKVEC2(mouse_pos.x - ctx->LastMousePos.x, mouse_pos.y - ctx->LastMousePos.y);
+    printf("MousePos (%f, %f) | LastMousePos (%f, %f) | MousePosDiff(%f, %f)\n",
+           ctx->MousePos.x, ctx->MousePos.y, ctx->LastMousePos.x, ctx->LastMousePos.y, ctx->MousePosDiff.x, ctx->MousePosDiff.y);
+}
+
 //=============================================================================
 // [SECTION] Mathematics
 //=============================================================================
@@ -411,10 +407,24 @@ void _LkGui_Matrix_Scale(mat4 mat, float scaler)
 }
 
 // In pixel coordinates
-void _LkGui_Matrix_Translate(mat4 mat, LkVec2 translation)
+void _LkGui_Matrix_Translate(mat4 mat /*== model*/, LkVec2 translation)
 {
-    LkVec2 translation_ndc = _LkGui_Math_ConvertToNDC(translation);
-    glm_translate(mat, (vec3){translation_ndc.x, translation_ndc.y, 0.0f});
+    LkGuiContext* ctx = LkGui_GetContext();
+    LkVec2 viewport_size = ctx->ViewportSize;
+    LkVec2 mouse_pos = ctx->MousePos;
+    // Center mouse pos
+    mouse_pos.x += viewport_size.x / 2;
+    mouse_pos.y += viewport_size.y / 2;
+    LkVec2 mouse_pos_ndc = _LkGui_Math_ConvertToNDC(mouse_pos);
+    LkVec2 translation_ndc = _LkGui_Math_ConvertToNDC(ctx->MousePosDiff);
+    // glm_mat4_identity(rect->Model);
+    glm_mat4_identity(mat);
+    vec3 t = { translation_ndc.x, translation_ndc.y, 0.0f };
+    // float x_pos = mat[3][0];
+    // float y_pos = mat[3][1];
+    t[0] += mouse_pos_ndc.x;
+    t[1] += mouse_pos_ndc.y;
+    glm_translate_to(mat, t, mat);
 }
 
 LkVec2 _LkGui_Math_ConvertToNDC(LkVec2 pixel_coords)
@@ -440,6 +450,10 @@ void _LkGui_Print_LkVec2(LkVec2 vec)
 // [SECTION] Geometry
 //=============================================================================
 float _LkGui_Geometry_Box_Vertices_NoTex[8] = {
+   // -0.5f, -0.5f,  // 0
+   //  0.5f, -0.5f,  // 1
+   //  0.5f,  0.5f,  // 2
+   // -0.5f,  0.5f   // 3
    -0.5f, -0.5f,  // 0
     0.5f, -0.5f,  // 1
     0.5f,  0.5f,  // 2

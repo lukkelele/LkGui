@@ -23,6 +23,7 @@ include(${SOURCE_PATH}/CMakeLists.txt)
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
         LK_IMPL_OPENGL_GLAD
+        _DEBUG
 )
 
 #target_sources(${PROJECT_NAME}

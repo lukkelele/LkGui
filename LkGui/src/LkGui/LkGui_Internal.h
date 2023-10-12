@@ -58,15 +58,21 @@ typedef struct LkGui_Shaders              LkGui_Shaders;
 typedef struct LkVec2                     LkVec2;
 typedef struct LkVec3                     LkVec3;
 typedef struct LkVec4                     LkVec4;
+typedef struct GLFWwindow                 GLFWwindow;
+
 typedef enum LkGui_ShaderType             LkGui_ShaderType;
 typedef enum LkGui_VertexBufferLayout_    LkGui_VertexBufferLayout_;
 typedef enum LkGui_ShaderIndex_           LkGui_ShaderIndex_;
 typedef enum LkGui_BlendFunc_             LkGui_BlendFunc_;
+
 typedef mat3                              LkMat3;
 typedef mat4                              LkMat4;
 typedef int                               LkGui_BlendFunc;
 typedef int                               LkGui_ShaderIndex;
 
+struct LkVec2 { float x, y; };
+struct LkVec3 { float x, y, z; };
+struct LkVec4 { float x, y, z, w; };
 
 //=============================================================================
 // [SECTION] Definitions
@@ -142,10 +148,6 @@ struct LkGui_DrawCommand
     unsigned int Shader;
 };
 
-struct LkVec2 { float x, y; };
-struct LkVec3 { float x, y, z; };
-struct LkVec4 { float x, y, z, w; };
-
 enum LkGui_VertexBufferLayout_
 {
     LkGui_VertexBufferLayout_None          = 0,
@@ -206,6 +208,9 @@ bool   LkGui_Mouse_IsButtonPressed(int mouse_code);
 LkVec2 LkGui_Mouse_GetPos();
 float  LkGui_Mouse_GetX();
 float  LkGui_Mouse_GetY();
+void   LkGui_Mouse_MoveCallback();
+// void   LkGui_Mouse_ButtonPressCallback(GLFWwindow* window, int button, int action, int mods);
+
 
 
 //=============================================================================
@@ -256,7 +261,6 @@ struct LkRectangle
     LkVec2              Translation;
     LkVec2              Scale;
     LkMat4              Model;
-    LkMat4*             _Model;
     LkMat4              ModelViewProjection;
 };
 

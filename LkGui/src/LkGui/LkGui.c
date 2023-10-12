@@ -59,7 +59,7 @@ void LkGui_CreateRectangle(LkVec2 p1, LkVec2 p2)
     LK_ASSERT(geometry_storage);
     LK_ASSERT(geometry_storage->Rectangles);
     // printf("LK_ARRAYSIZE(geometry_storage->Rectangles) == %d\n", LK_ARRAYSIZE(geometry_storage->Rectangles)); // prints 100 correctly
-    for (int rect_idx = 0; rect_idx < 10; rect_idx++)
+    for (int rect_idx = 0; rect_idx < LK_ARRAYSIZE(geometry_storage->Rectangles); rect_idx++)
     {
         LkRectangle* rect = geometry_storage->Rectangles[rect_idx];
         if (!rect || rect_idx < LK_ARRAYSIZE(geometry_storage->Rectangles))
@@ -70,6 +70,7 @@ void LkGui_CreateRectangle(LkVec2 p1, LkVec2 p2)
             rect->VB = _LkGui_CreateVertexBuffer(_LkGui_Geometry_Box_Vertices_NoTex, LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex));
             rect->IB = _LkGui_CreateIndexBuffer(_LkGui_Geometry_Box_Indices, 6);
             rect->VertexBufferSize = LK_ARRAYSIZE(_LkGui_Geometry_Box_Vertices_NoTex);
+            // rect->Model = (mat4*)malloc(sizeof(mat4));
             LK_ASSERT_RECTANGLE(rect);
             _LkGui_VertexArray_AddBuffer(rect->VA, rect->VB, LkGui_VertexBufferLayout_VertCoords);
             glm_mat4_identity(rect->Model);
@@ -79,7 +80,6 @@ void LkGui_CreateRectangle(LkVec2 p1, LkVec2 p2)
         }
     }
 }
-
 
 
 //=============================================================================

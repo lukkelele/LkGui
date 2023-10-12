@@ -13,10 +13,14 @@ struct LkGuiContext
     void*                   MainViewport;
     void* 					MainWindow;
     void*                   GlfwWindowHandle;
-    LkGui_BackendData*      BackendData;
+    LkGui_BackendData*      BackendData; // move GlfwHandle here ?
     LkGeometryStorage*      GeometryStorage;
     LkVec2                  WindowSize;
     LkVec2                  ViewportSize;
+
+    LkVec2                  MousePos;
+    LkVec2                  LastMousePos;
+    LkVec2                  MousePosDiff;
 };
 
 //=============================================================================
